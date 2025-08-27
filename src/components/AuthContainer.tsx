@@ -1,5 +1,4 @@
-// src/AuthContainer.tsx
-// Контейнер авторизации через SMS (Firebase Phone Auth) + профиль пользователя.
+// src/components/AuthContainer.tsx
 import React, { useState, useEffect } from 'react';
 import {
   RecaptchaVerifier,
@@ -8,7 +7,7 @@ import {
   type ConfirmationResult,
   type User as FirebaseUser
 } from 'firebase/auth';
-import { auth, rtdb } from '../firebase.ts';
+import { auth, rtdb } from '../firebase';
 import { ref as dbRef, get, set, remove } from 'firebase/database';
 import EstimateForm from '../EstimateForm';
 
@@ -16,7 +15,8 @@ type Step = 'phone' | 'code' | 'profile' | 'main';
 
 declare global {
   interface Window {
-    recaptchaVerifier?: RecaptchaVerifier & { widgetId?: number; rendered?: boolean };
+    recaptchaVerifier?: RecaptchaVerifier | null;
+    recaptchaWidgetId?: number | null;
     grecaptcha?: any;
   }
 }
@@ -35,9 +35,9 @@ export default function AuthContainer() {
   const [name, setName] = useState('');
   const [role, setRole] = useState('');
 
-  // Подписка на изменение состояния аутентификации
+  // Auth state
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async u => {
+    return onAuthStateChanged(auth, async u => {
       if (!u) {
         setUser(null);
         setStep('phone');
@@ -58,49 +58,45 @@ export default function AuthContainer() {
         setStep('profile');
       }
     });
-    return () => unsub();
   }, []);
 
-  // Инициализация reCAPTCHA: один инстанс на шаг 'phone'
+  // reCAPTCHA lifecycle
   useEffect(() => {
     if (step !== 'phone') return;
 
-    const el = document.getElementById('recaptcha-container');
-    if (!el) return;
-
-    if (!window.recaptchaVerifier) {
-      const v = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'invisible' });
-      v.render().then((id: number) => {
-        (v as any).widgetId = id;
-        (v as any).rendered = true;
-      });
-      window.recaptchaVerifier = v as any;
-    }
+    const ensure = async () => {
+      if (!window.recaptchaVerifier) {
+        const v = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'invisible' });
+        const id = await v.render();
+        window.recaptchaVerifier = v;
+        window.recaptchaWidgetId = typeof id === 'number' ? id : Number(id);
+      }
+    };
+    ensure();
 
     return () => {
       try { window.recaptchaVerifier?.clear(); } catch {}
-      window.recaptchaVerifier = undefined;
+      window.recaptchaVerifier = null;
+      window.recaptchaWidgetId = null;
     };
   }, [step]);
 
   const resetCaptchaIfRendered = () => {
-    const v = window.recaptchaVerifier as any;
-    if (v?.rendered && v?.widgetId !== undefined) {
-      const g = window.grecaptcha;
-      if (g?.enterprise?.reset) g.enterprise.reset(v.widgetId);
-      else if (g?.reset) g.reset(v.widgetId);
+    const id = window.recaptchaWidgetId;
+    const g = window.grecaptcha;
+    if (id != null && g) {
+      if (g.enterprise?.reset) g.enterprise.reset(id);
+      else if (g.reset) g.reset(id);
     }
   };
 
   const ensureCaptcha = async () => {
-    if (window.recaptchaVerifier) return window.recaptchaVerifier!;
+    if (window.recaptchaVerifier) return window.recaptchaVerifier;
     const v = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'invisible' });
-    await v.render().then((id: number) => {
-      (v as any).widgetId = id;
-      (v as any).rendered = true;
-    });
-    window.recaptchaVerifier = v as any;
-    return window.recaptchaVerifier!;
+    const id = await v.render();
+    window.recaptchaVerifier = v;
+    window.recaptchaWidgetId = typeof id === 'number' ? id : Number(id);
+    return v;
   };
 
   const sendCode = async () => {
@@ -119,7 +115,8 @@ export default function AuthContainer() {
     } catch (e: any) {
       if (e?.code === 'auth/captcha-check-failed') {
         try { window.recaptchaVerifier?.clear(); } catch {}
-        window.recaptchaVerifier = undefined;
+        window.recaptchaVerifier = null;
+        window.recaptchaWidgetId = null;
         alert('Капча сброшена. Повторите отправку.');
       } else if (e?.code === 'auth/too-many-requests') {
         alert('Слишком много попыток. Подождите или используйте Test Phone Number.');
@@ -155,7 +152,8 @@ export default function AuthContainer() {
 
   const clearCaptcha = () => {
     try { window.recaptchaVerifier?.clear(); } catch {}
-    window.recaptchaVerifier = undefined;
+    window.recaptchaVerifier = null;
+    window.recaptchaWidgetId = null;
   };
 
   const doFullLogout = async () => {
