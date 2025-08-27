@@ -35,78 +35,25 @@ export default function AuthContainer() {
   const [name, setName] = useState('');
   const [role, setRole] = useState('');
 
-  // Auth state
-  useEffect(() => {
-    return onAuthStateChanged(auth, async u => {
-      if (!u) {
-        setUser(null);
-        setStep('phone');
-        return;
-      }
-      setUser(u);
-      try {
-        const snap = await get(dbRef(rtdb, `profiles/${u.uid}`));
-        if (snap.exists()) {
-          const v = snap.val() as { name?: string; role?: string };
-          setName(v?.name ?? '');
-          setRole(v?.role ?? '');
-          setStep('main');
-        } else {
-          setStep('profile');
-        }
-      } catch {
-        setStep('profile');
-      }
-    });
-  }, []);
-
-  // reCAPTCHA lifecycle
-// reCAPTCHA lifecycle
-useEffect(() => {
-  if (step !== 'phone') return;
-
-  const mount = async () => {
-    const el = document.getElementById('recaptcha-container');
-    if (el) el.innerHTML = '';                         // 2) чистим DOM
-
-    if (!window.recaptchaVerifier) {
-      const v = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'invisible' });
-      const id = await v.render();
-      window.recaptchaVerifier = v;
-      window.recaptchaWidgetId = typeof id === 'number' ? id : Number(id);
-    }
-  };
-  mount();
-
-  return () => {
-    try { window.recaptchaVerifier?.clear(); } catch {}
-    // на всякий: сбросить grecaptcha и DOM
-    const id = window.recaptchaWidgetId;
-    const g = window.grecaptcha;
-    if (id != null && g) {
-      if (g.enterprise?.reset) g.enterprise.reset(id);
-      else if (g.reset) g.reset(id);
-    }
-    const el = document.getElementById('recaptcha-container');
-    if (el) el.innerHTML = '';
-    window.recaptchaVerifier = null;
-    window.recaptchaWidgetId = null;
-  };
-}, [step]);
-
-const resetCaptchaIfRendered = () => {
+// ---- helpers ----
+const hardResetCaptcha = () => {
+  try { window.recaptchaVerifier?.clear(); } catch {}
   const id = window.recaptchaWidgetId;
   const g = window.grecaptcha;
   if (id != null && g) {
     if (g.enterprise?.reset) g.enterprise.reset(id);
     else if (g.reset) g.reset(id);
   }
+  const el = document.getElementById('recaptcha-container');
+  if (el) el.innerHTML = '';
+  window.recaptchaVerifier = null;
+  window.recaptchaWidgetId = null;
 };
 
 const ensureCaptcha = async () => {
   if (window.recaptchaVerifier) return window.recaptchaVerifier;
   const el = document.getElementById('recaptcha-container');
-  if (el) el.innerHTML = '';                           // 2) чистим DOM
+  if (el) el.innerHTML = '';
   const v = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'invisible' });
   const id = await v.render();
   window.recaptchaVerifier = v;
@@ -114,45 +61,75 @@ const ensureCaptcha = async () => {
   return v;
 };
 
+const safeResetIfHasResponse = () => {
+  const id = window.recaptchaWidgetId;
+  const g = window.grecaptcha;
+  if (id == null || !g) return;
+  const resp = g.enterprise?.getResponse ? g.enterprise.getResponse(id)
+             : g.getResponse ? g.getResponse(id)
+             : '';
+  if (resp) {
+    if (g.enterprise?.reset) g.enterprise.reset(id);
+    else if (g.reset) g.reset(id);
+  }
+};
+
+// ---- effects ----
+// auth state → маршрутизация и загрузка профиля
+useEffect(() => {
+  return onAuthStateChanged(auth, async u => {
+    if (!u) {
+      setUser(null);
+      setStep('phone');
+      return;
+    }
+    setUser(u);
+    try {
+      const snap = await get(dbRef(rtdb, `profiles/${u.uid}`));
+      if (snap.exists()) {
+        const v = snap.val() as { name?: string; role?: string };
+        setName(v?.name ?? '');
+        setRole(v?.role ?? '');
+        setStep('main');
+      } else {
+        setStep('profile');
+      }
+    } catch {
+      setStep('profile');
+    }
+  });
+}, []);
+
+// lifecycle капчи на шаге phone
+useEffect(() => {
+  if (step !== 'phone') return;
+  let mounted = true;
+  (async () => { if (mounted) await ensureCaptcha(); })();
+  return () => { mounted = false; hardResetCaptcha(); };
+}, [step]);
+
+// ---- actions ----
 const sendCode = async () => {
   if (pending) return;
   if (!/^\+\d{6,}$/.test(phone)) { alert('Номер в формате +71234567890'); return; }
 
   setPending(true);
   try {
-    const verifier = await ensureCaptcha();   // гарантируем инстанс
-    resetCaptchaIfRendered();                 // сбрасываем виджет
+    const verifier = await ensureCaptcha();
+    safeResetIfHasResponse();                    // не трогаем свежий виджет
     const res = await signInWithPhoneNumber(auth, phone, verifier);
     setConfirmation(res);
     setStep('code');
   } catch (e: any) {
+    // две проблемные ошибки → полный сброс и чистый инстанс
     if (e?.code === 'auth/captcha-check-failed' || e?.code === 'auth/too-many-requests') {
-      // жёсткий ресет verifier + DOM + grecaptcha
-      try { window.recaptchaVerifier?.clear(); } catch {}
-      const id = window.recaptchaWidgetId;
-      const g = window.grecaptcha;
-      if (id != null && g) {
-        if (g.enterprise?.reset) g.enterprise.reset(id);
-        else if (g.reset) g.reset(id);
-      }
-      const el = document.getElementById('recaptcha-container');
-      if (el) el.innerHTML = '';
-      window.recaptchaVerifier = null;
-      window.recaptchaWidgetId = null;
-
+      hardResetCaptcha();
       alert(
-        e.code === 'auth/too-many-requests'
+        e?.code === 'auth/too-many-requests'
           ? 'Слишком много попыток. Подождите или используйте Test Phone Number.'
           : 'Капча сброшена. Повторите отправку.'
       );
-
-      // заранее создаём новый инстанс для следующей попытки
-      try {
-        const v = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'invisible' });
-        const newId = await v.render();
-        window.recaptchaVerifier = v;
-        window.recaptchaWidgetId = typeof newId === 'number' ? newId : Number(newId);
-      } catch {}
+      try { await ensureCaptcha(); } catch {}
     } else {
       alert('Ошибка: ' + (e?.message || e?.code || 'unknown'));
     }
@@ -161,55 +138,35 @@ const sendCode = async () => {
   }
 };
 
+const verifyCode = async () => {
+  if (!confirmation) return;
+  try {
+    const cred = await confirmation.confirm(code);
+    setUser(cred.user);
+    setStep('profile');
+  } catch {
+    alert('Неверный код');
+  }
+};
 
-  const verifyCode = async () => {
-    if (!confirmation) return;
-    try {
-      const cred = await confirmation.confirm(code);
-      setUser(cred.user);
-      setStep('profile');
-    } catch {
-      alert('Неверный код');
-    }
-  };
+const saveProfile = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!user) return;
+  try {
+    await set(dbRef(rtdb, `profiles/${user.uid}`), { name, role, createdAt: Date.now() });
+    setStep('main');
+  } catch (e: any) {
+    alert('Не удалось сохранить профиль: ' + (e?.message || e?.code || 'unknown'));
+  }
+};
 
-  const saveProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
-    try {
-      await set(dbRef(rtdb, `profiles/${user.uid}`), { name, role, createdAt: Date.now() });
-      setStep('main');
-    } catch (e: any) {
-      alert('Не удалось сохранить профиль: ' + (e?.message || e?.code || 'unknown'));
-    }
-  };
-
-  const clearCaptcha = () => {
-    try { window.recaptchaVerifier?.clear(); } catch {}
-    const id = window.recaptchaWidgetId;
-    const g = window.grecaptcha;
-    if (id != null && g) {
-      if (g.enterprise?.reset) g.enterprise.reset(id);
-      else if (g.reset) g.reset(id);
-    }
-    const el = document.getElementById('recaptcha-container');
-    if (el) el.innerHTML = '';
-    window.recaptchaVerifier = null;
-    window.recaptchaWidgetId = null;
-  };
-
-  const doFullLogout = async () => {
-    if (user) {
-      try { await remove(dbRef(rtdb, `profiles/${user.uid}`)); } catch {}
-    }
-    clearCaptcha();
-    await auth.signOut();
-  };
-
-  const doLightLogout = async () => {
-    clearCaptcha();
-    await auth.signOut();
-  };
+const clearCaptchaAndSignOut = async (removeProfile: boolean) => {
+  if (removeProfile && user) {
+    try { await remove(dbRef(rtdb, `profiles/${user.uid}`)); } catch {}
+  }
+  hardResetCaptcha();
+  await auth.signOut();
+};
 
   return (
     <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-4">
@@ -285,8 +242,8 @@ const sendCode = async () => {
             user={user}
             userName={name}
             userRole={role}
-            onLightLogout={doLightLogout}
-            onFullLogout={doFullLogout}
+            onLightLogout={() => clearCaptchaAndSignOut(false)}
+            onFullLogout={() => clearCaptchaAndSignOut(true)}
           />
         </div>
       )}
