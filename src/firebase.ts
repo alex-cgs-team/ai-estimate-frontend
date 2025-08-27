@@ -40,14 +40,14 @@ import { getDatabase } from 'firebase/database'
 const DB_URL = import.meta.env.VITE_FIREBASE_DB_URL || 'https://project-ai-estimate-default-rtdb.firebaseio.com'
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyBX-ieCj2aAd6JmOhiXC73yKZi5-19Shd0',
-  authDomain: 'project-ai-estimate.firebaseapp.com',
-  databaseURL: DB_URL, // ← вот тут
-  projectId: 'project-ai-estimate',
-  storageBucket: 'project-ai-estimate.appspot.com',
-  messagingSenderId: '883080880961',
-  appId: '1:883080880961:web:229e20a283eb7c0',
-}
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  databaseURL: import.meta.env.VITE_FIREBASE_DB_URL,
+};
 
 const app = initializeApp(firebaseConfig)
 export const auth = getAuth(app)
