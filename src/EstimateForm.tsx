@@ -122,36 +122,30 @@ export default function EstimateForm({
   };
 
   // Submit
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setProcessing(true);
-
+  
     try {
-      // Лимит: 3 бесплатные отправки, дальше Checkout
+      // 1) Гейт бесплатного лимита
       const shouldCheckout = !usage.paid && usage.count >= FREE_LIMIT;
       if (shouldCheckout) { await goToCheckout(); return; }
-
-      // Атомарный инкремент счётчика
-      await runTransaction(
-        dbRef(rtdb, `profiles/${user.uid}/usage/count`),
-        (c) => (c ?? 0) + 1
-      );
-
-      // 2) executionId
+  
+      // 2) Основной процесс
       const executionId = uuidv4();
-
-      // 3) прогресс
+  
       const operationsRef = dbRef(
         rtdb,
-        `profiles/${user.uid}/estimates/${executionId}/operations`,
+        `profiles/${user.uid}/estimates/${executionId}/operations`
       );
+  
       await push(operationsRef, {
         step: 'Initializing estimate...',
         status: 'pending',
         progress: 0,
       });
-
-      // 4) данные
+  
       const formData = new FormData();
       formData.append('executionId', executionId);
       formData.append('userId', user.uid);
@@ -160,36 +154,36 @@ export default function EstimateForm({
       formData.append('user_phone', user.phoneNumber || '');
       formData.append('user_name', userName);
       formData.append('user_role', userRole);
-
+  
       entries.forEach((entry) => {
         formData.append('files', entry.file, entry.file.name);
         formData.append('types', entry.type);
         formData.append('descriptions', entry.description);
       });
-
+  
       await push(operationsRef, {
         step: 'Sending data to n8n...',
         status: 'in_progress',
         progress: 20,
       });
-
-      // 6) n8n (как было)
+  
+      // n8n как есть
       const resp = await fetch(
         'http://localhost:5678/webhook/79c1c326-1af6-4c73-9194-6737b093b58d',
         { method: 'POST', body: formData }
       );
       if (!resp.ok) throw new Error(`Webhook error ${resp.status}`);
       const respJson = await resp.json();
-
+  
       await push(operationsRef, {
         step: 'n8n processing finished',
         status: 'done',
         progress: 100,
       });
-
+  
       const estimateRef = dbRef(
         rtdb,
-        `profiles/${user.uid}/estimates/${executionId}`,
+        `profiles/${user.uid}/estimates/${executionId}`
       );
       await set(estimateRef, {
         projectName,
@@ -197,7 +191,13 @@ export default function EstimateForm({
         sharedLink: respJson.sharedLink || null,
         createdAt: Date.now(),
       });
-
+  
+      // 3) Атомарный инкремент ПОСЛЕ успешной записи эстимейта
+      await runTransaction(
+        dbRef(rtdb, `profiles/${user.uid}/usage/count`),
+        (c) => (c ?? 0) + 1
+      );
+  
       navigate(`/waiting/${executionId}`);
     } catch (err: any) {
       console.error('Error in handleSubmit:', err);
