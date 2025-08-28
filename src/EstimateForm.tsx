@@ -62,6 +62,15 @@ export default function EstimateForm({
     });
   }, [user.uid]);
 
+  useEffect(() => {
+    console.log("ENV CHECK:", {
+      MODE: import.meta.env.MODE,
+      BACKEND_URL: import.meta.env.VITE_BACKEND_URL,
+      STRIPE_KEY: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY,
+      PRICE_ID: import.meta.env.VITE_STRIPE_PRICE_ID,
+    });
+  }, []);
+
   // Stripe Checkout
   const goToCheckout = async () => {
     setProcessing(true);
