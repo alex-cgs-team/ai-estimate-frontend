@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "project-ai-estimate"
-  }
+    "default": "project-ai-estimate-staging",
+    "stg": "project-ai-estimate-staging"
+  },
+  "targets": {},
+  "etags": {}
 }

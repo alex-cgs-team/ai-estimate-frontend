@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const admin   = require('firebase-admin');
 const Stripe  = require('stripe');
+const cors = require('cors');
+
 
 // Инициализация Firebase Admin SDK
 // admin.initializeApp({
@@ -28,16 +30,27 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2022-11-
 const app = express();
 const isDev = process.env.NODE_ENV !== 'production';
 
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
-    res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization');
-    if (req.method === 'OPTIONS') {
-      return res.sendStatus(200);
-    }
-    next();
-  });
-  
+const allowList = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:3000',
+  'https://ai-estimate-frontend.vercel.app',
+];
+const previewRe = /\.vercel\.app$/;
+
+const corsCfg = cors({
+  origin(origin, cb) {
+    if (!origin) return cb(null, true);
+    const ok = allowList.includes(origin) || previewRe.test(origin);
+    cb(ok ? null : new Error('CORS blocked'), ok);
+  },
+  methods: ['GET','POST','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization','Stripe-Signature'],
+  credentials: true,
+});
+
+app.use(corsCfg);
+app.options('(.*)', corsCfg); // <= ключевой фикс
 // 1) Healthcheck
 app.get('/healthz', async (req, res) => {
   try {
@@ -278,27 +291,32 @@ app.get('/stripe-whoami', async (_req, res) => {
 
 // 7) Создание Stripe Checkout Session
 app.post('/create-subscription', verifyToken, async (req, res) => {
-
-  
-  const priceId = process.env.STRIPE_PRICE_ID;           // ← читаем из ENV
-  if (!priceId) return res.status(500).send('No STRIPE_PRICE_ID');
-
   try {
+    let customerId
+    if (process.env.STRIPE_TEST_CLOCK_ID) {
+      const customer = await stripe.customers.create({
+        test_clock: process.env.STRIPE_TEST_CLOCK_ID,
+        metadata: { uid: req.user.uid, env: 'stg' }
+      })
+      customerId = customer.id
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
-      payment_method_types: ['card'],
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
       success_url: `${process.env.FRONTEND_URL}/?subscribed=true`,
       cancel_url: `${process.env.FRONTEND_URL}/?subscribed=false`,
-      metadata: { uid: req.user.uid },
+      customer: customerId, // <-- важно
       subscription_data: { metadata: { uid: req.user.uid } }
-    });
-    res.json({ sessionId: session.id }); // <-- вернём только sessionId
+    })
+
+    res.json({ sessionId: session.id })
   } catch (e) {
-    console.error('❌ createCheckoutSession error:', e);
-    res.status(500).send('Internal error');
+    console.error('❌ create-subscription error:', e)
+    res.status(500).send('Internal error')
   }
-});
+})
+
 
 
 // Запуск сервера
