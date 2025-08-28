@@ -3,11 +3,14 @@
 
 import React, { useState, useEffect } from 'react';
 import type { User } from 'firebase/auth';
-import { ref as dbRef, set, onValue, push } from 'firebase/database';
+import { ref as dbRef, set, onValue, push, runTransaction } from 'firebase/database';
 import { rtdb } from './firebase.ts';
 import { loadStripe } from '@stripe/stripe-js';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
+
+// --- CONFIG ---
+const FREE_LIMIT = 3;
 
 // --- ENV ---
 const isDev = import.meta.env.MODE === 'development';
@@ -55,21 +58,13 @@ export default function EstimateForm({
   const [processing, setProcessing] = useState(false);
   const navigate = useNavigate();
 
+  // Подписка на usage
   useEffect(() => {
     const usageRef = dbRef(rtdb, `profiles/${user.uid}/usage`);
     return onValue(usageRef, (snap) => {
       setUsage(snap.exists() ? snap.val() : { count: 0, paid: false });
     });
   }, [user.uid]);
-
-  useEffect(() => {
-    console.log("ENV CHECK:", {
-      MODE: import.meta.env.MODE,
-      BACKEND_URL: import.meta.env.VITE_BACKEND_URL,
-      STRIPE_KEY: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY,
-      PRICE_ID: import.meta.env.VITE_STRIPE_PRICE_ID,
-    });
-  }, []);
 
   // Stripe Checkout
   const goToCheckout = async () => {
@@ -132,18 +127,20 @@ export default function EstimateForm({
     setProcessing(true);
 
     try {
-      const shouldCheckout = !usage.paid && usage.count < -3;
-      if (shouldCheckout) {
-        await goToCheckout();
-        return;
-      }
+      // Лимит: 3 бесплатные отправки, дальше Checkout
+      const shouldCheckout = !usage.paid && usage.count >= FREE_LIMIT;
+      if (shouldCheckout) { await goToCheckout(); return; }
 
-      await set(dbRef(rtdb, `profiles/${user.uid}/usage`), {
-        count: usage.count + 1,
-        paid: usage.paid,
-      });
+      // Атомарный инкремент счётчика
+      await runTransaction(
+        dbRef(rtdb, `profiles/${user.uid}/usage/count`),
+        (c) => (c ?? 0) + 1
+      );
 
+      // 2) executionId
       const executionId = uuidv4();
+
+      // 3) прогресс
       const operationsRef = dbRef(
         rtdb,
         `profiles/${user.uid}/estimates/${executionId}/operations`,
@@ -154,6 +151,7 @@ export default function EstimateForm({
         progress: 0,
       });
 
+      // 4) данные
       const formData = new FormData();
       formData.append('executionId', executionId);
       formData.append('userId', user.uid);
@@ -175,13 +173,10 @@ export default function EstimateForm({
         progress: 20,
       });
 
-      // n8n — оставлен как есть
+      // 6) n8n (как было)
       const resp = await fetch(
         'http://localhost:5678/webhook/79c1c326-1af6-4c73-9194-6737b093b58d',
-        {
-          method: 'POST',
-          body: formData,
-        },
+        { method: 'POST', body: formData }
       );
       if (!resp.ok) throw new Error(`Webhook error ${resp.status}`);
       const respJson = await resp.json();
