@@ -197,6 +197,7 @@ if (isDev) {
       return res.status(400).send(`Webhook Error: ${e.message}`);
     }
     try {
+      console.log('🌐 [WEBHOOK]', event.type);   // <--- вот тут
       if (event.type === 'checkout.session.completed') {
         const session = event.data.object;
         const uid = session.metadata?.uid;
