@@ -176,6 +176,29 @@ if (isDev) {
           }
         }
       }
+
+      if (event.type === 'invoice.payment_failed') {
+        const invoice = event.data.object;
+        const subscriptionId = invoice.subscription;
+        if (subscriptionId) {
+          const sub = await stripe.subscriptions.retrieve(subscriptionId);
+          const uid = sub.metadata?.uid;
+          if (uid) {
+            const status = sub.status; // обычно past_due или unpaid
+            const currentPeriodEnd = sub.current_period_end ? sub.current_period_end * 1000 : null;
+            const paid = ['active', 'trialing'].includes(status);
+            await admin.database().ref(`profiles/${uid}/usage`).update({
+              paid,
+              subscriptionId: sub.id,
+              status,
+              currentPeriodEnd,
+              updatedAt: Date.now(),
+            });
+            console.log(`⚠️ [DEV] Invoice failed for ${uid}:`, { status, currentPeriodEnd });
+          }
+        }
+      }
+
     } catch (err) {
       console.error('❌ [DEV] Webhook handler error:', err);
     }
@@ -261,6 +284,29 @@ if (isDev) {
           }
         }
       }
+
+      if (event.type === 'invoice.payment_failed') {
+        const invoice = event.data.object;
+        const subscriptionId = invoice.subscription;
+        if (subscriptionId) {
+          const sub = await stripe.subscriptions.retrieve(subscriptionId);
+          const uid = sub.metadata?.uid;
+          if (uid) {
+            const status = sub.status;
+            const currentPeriodEnd = sub.current_period_end ? sub.current_period_end * 1000 : null;
+            const paid = ['active', 'trialing'].includes(status);
+            await admin.database().ref(`profiles/${uid}/usage`).update({
+              paid,
+              subscriptionId: sub.id,
+              status,
+              currentPeriodEnd,
+              updatedAt: Date.now(),
+            });
+            console.log(`⚠️ Invoice failed for ${uid}:`, { status, currentPeriodEnd });
+          }
+        }
+      }
+
     } catch (err) {
       console.error('❌ Webhook handler error:', err);
     }
@@ -293,30 +339,39 @@ app.get('/stripe-whoami', async (_req, res) => {
 // 7) Создание Stripe Checkout Session
 app.post('/create-subscription', verifyToken, async (req, res) => {
   try {
-    let customerId
-    if (process.env.STRIPE_TEST_CLOCK_ID) {
-      const customer = await stripe.customers.create({
-        test_clock: process.env.STRIPE_TEST_CLOCK_ID,
-        metadata: { uid: req.user.uid, env: 'stg' }
-      })
-      customerId = customer.id
+    const uid = req.user.uid;
+
+    // 1) ищем существующего customer по uid
+    const found = await stripe.customers.search({ query: `metadata['uid']:'${uid}'` });
+    let customerId = found.data[0]?.id;
+
+    // 2) если нет — создаём; clock только при создании
+    if (!customerId) {
+      const createParams = { metadata: { uid, env: 'stg' } };
+      if (process.env.STRIPE_TEST_CLOCK_ID) {
+        createParams.test_clock = process.env.STRIPE_TEST_CLOCK_ID;
+      }
+      const customer = await stripe.customers.create(createParams);
+      customerId = customer.id;
     }
 
+    // 3) Checkout Session на найденного/созданного customer
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
+      customer: customerId,
       line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
+      subscription_data: { metadata: { uid } },
       success_url: `${process.env.FRONTEND_URL}/?subscribed=true`,
       cancel_url: `${process.env.FRONTEND_URL}/?subscribed=false`,
-      customer: customerId, // <-- важно
-      subscription_data: { metadata: { uid: req.user.uid } }
-    })
+    });
 
-    res.json({ sessionId: session.id })
+    res.json({ sessionId: session.id });
   } catch (e) {
-    console.error('❌ create-subscription error:', e)
-    res.status(500).send('Internal error')
+    console.error('❌ create-subscription error:', e);
+    res.status(500).json({ error: e.message, type: e.type || null });
   }
-})
+});
+
 
 
 
