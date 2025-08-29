@@ -1,0 +1,29 @@
+{
+  "rules": {
+    "profiles": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+
+        "usage": {
+          ".read": "auth != null && auth.uid == $uid",
+
+          "count": {
+            ".write": "auth != null && auth.uid == $uid && (root.child('profiles/'+$uid+'/usage/paid').val() == true || ((data.val()==null?0:data.val()) < 3 && newData.val() == ((data.val()==null?0:data.val()) + 1)))"
+          },
+
+          "paid":         { ".write": false },
+          "status":       { ".write": false },
+          "subscriptionId": { ".write": false },
+          "currentPeriodEnd": { ".write": false },
+          "updatedAt":    { ".write": false }
+        },
+
+        "estimates": {
+          "$exec": {
+            ".write": "auth != null && auth.uid == $uid && (root.child('profiles/'+$uid+'/usage/paid').val() == true || root.child('profiles/'+$uid+'/usage/count').val() < 3)"
+          }
+        }
+      }
+    }
+  }
+}

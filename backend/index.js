@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const admin   = require('firebase-admin');
 const Stripe  = require('stripe');
+const cors = require('cors');
+
 
 // Инициализация Firebase Admin SDK
 // admin.initializeApp({
@@ -28,16 +30,27 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2022-11-
 const app = express();
 const isDev = process.env.NODE_ENV !== 'production';
 
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
-    res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization');
-    if (req.method === 'OPTIONS') {
-      return res.sendStatus(200);
-    }
-    next();
-  });
-  
+const allowList = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:3000',
+  'https://ai-estimate-frontend.vercel.app',
+];
+const previewRe = /\.vercel\.app$/;
+
+const corsCfg = cors({
+  origin(origin, cb) {
+    if (!origin) return cb(null, true);
+    const ok = allowList.includes(origin) || previewRe.test(origin);
+    cb(ok ? null : new Error('CORS blocked'), ok);
+  },
+  methods: ['GET','POST','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization','Stripe-Signature'],
+  credentials: true,
+});
+
+app.use(corsCfg);
+app.options('(.*)', corsCfg); // <= ключевой фикс
 // 1) Healthcheck
 app.get('/healthz', async (req, res) => {
   try {
@@ -163,6 +176,29 @@ if (isDev) {
           }
         }
       }
+
+      if (event.type === 'invoice.payment_failed') {
+        const invoice = event.data.object;
+        const subscriptionId = invoice.subscription;
+        if (subscriptionId) {
+          const sub = await stripe.subscriptions.retrieve(subscriptionId);
+          const uid = sub.metadata?.uid;
+          if (uid) {
+            const status = sub.status; // обычно past_due или unpaid
+            const currentPeriodEnd = sub.current_period_end ? sub.current_period_end * 1000 : null;
+            const paid = ['active', 'trialing'].includes(status);
+            await admin.database().ref(`profiles/${uid}/usage`).update({
+              paid,
+              subscriptionId: sub.id,
+              status,
+              currentPeriodEnd,
+              updatedAt: Date.now(),
+            });
+            console.log(`⚠️ [DEV] Invoice failed for ${uid}:`, { status, currentPeriodEnd });
+          }
+        }
+      }
+
     } catch (err) {
       console.error('❌ [DEV] Webhook handler error:', err);
     }
@@ -184,6 +220,7 @@ if (isDev) {
       return res.status(400).send(`Webhook Error: ${e.message}`);
     }
     try {
+      console.log('🌐 [WEBHOOK]', event.type);   // <--- вот тут
       if (event.type === 'checkout.session.completed') {
         const session = event.data.object;
         const uid = session.metadata?.uid;
@@ -247,6 +284,29 @@ if (isDev) {
           }
         }
       }
+
+      if (event.type === 'invoice.payment_failed') {
+        const invoice = event.data.object;
+        const subscriptionId = invoice.subscription;
+        if (subscriptionId) {
+          const sub = await stripe.subscriptions.retrieve(subscriptionId);
+          const uid = sub.metadata?.uid;
+          if (uid) {
+            const status = sub.status;
+            const currentPeriodEnd = sub.current_period_end ? sub.current_period_end * 1000 : null;
+            const paid = ['active', 'trialing'].includes(status);
+            await admin.database().ref(`profiles/${uid}/usage`).update({
+              paid,
+              subscriptionId: sub.id,
+              status,
+              currentPeriodEnd,
+              updatedAt: Date.now(),
+            });
+            console.log(`⚠️ Invoice failed for ${uid}:`, { status, currentPeriodEnd });
+          }
+        }
+      }
+
     } catch (err) {
       console.error('❌ Webhook handler error:', err);
     }
@@ -278,27 +338,41 @@ app.get('/stripe-whoami', async (_req, res) => {
 
 // 7) Создание Stripe Checkout Session
 app.post('/create-subscription', verifyToken, async (req, res) => {
-
-  
-  const priceId = process.env.STRIPE_PRICE_ID;           // ← читаем из ENV
-  if (!priceId) return res.status(500).send('No STRIPE_PRICE_ID');
-
   try {
+    const uid = req.user.uid;
+
+    // 1) ищем существующего customer по uid
+    const found = await stripe.customers.search({ query: `metadata['uid']:'${uid}'` });
+    let customerId = found.data[0]?.id;
+
+    // 2) если нет — создаём; clock только при создании
+    if (!customerId) {
+      const createParams = { metadata: { uid, env: 'stg' } };
+      if (process.env.STRIPE_TEST_CLOCK_ID) {
+        createParams.test_clock = process.env.STRIPE_TEST_CLOCK_ID;
+      }
+      const customer = await stripe.customers.create(createParams);
+      customerId = customer.id;
+    }
+
+    // 3) Checkout Session на найденного/созданного customer
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
-      payment_method_types: ['card'],
-      line_items: [{ price: priceId, quantity: 1 }],
+      customer: customerId,
+      line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
+      subscription_data: { metadata: { uid } },
       success_url: `${process.env.FRONTEND_URL}/?subscribed=true`,
       cancel_url: `${process.env.FRONTEND_URL}/?subscribed=false`,
-      metadata: { uid: req.user.uid },
-      subscription_data: { metadata: { uid: req.user.uid } }
     });
-    res.json({ sessionId: session.id }); // <-- вернём только sessionId
+
+    res.json({ sessionId: session.id });
   } catch (e) {
-    console.error('❌ createCheckoutSession error:', e);
-    res.status(500).send('Internal error');
+    console.error('❌ create-subscription error:', e);
+    res.status(500).json({ error: e.message, type: e.type || null });
   }
 });
+
+
 
 
 // Запуск сервера
