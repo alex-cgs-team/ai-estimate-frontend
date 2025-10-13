@@ -24,9 +24,12 @@ const STRIPE_PUBLISHABLE_KEY = import.meta.env
 
 const STRIPE_PRICE_ID = import.meta.env.VITE_STRIPE_PRICE_ID as string;
 
+const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL as string;
+
 if (!STRIPE_PUBLISHABLE_KEY) throw new Error('Missing VITE_STRIPE_PUBLISHABLE_KEY');
 if (!isDev && !API_BASE) throw new Error('Missing VITE_BACKEND_URL in Preview/Prod');
 if (!STRIPE_PRICE_ID) throw new Error('Missing VITE_STRIPE_PRICE_ID');
+if (!N8N_WEBHOOK_URL) throw new Error('Missing N8N_WEBHOOK_URL');
 
 // Stripe.js
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
@@ -169,7 +172,7 @@ export default function EstimateForm({
   
       // n8n как есть
       const resp = await fetch(
-        'http://localhost:5678/webhook/79c1c326-1af6-4c73-9194-6737b093b58d',
+        N8N_WEBHOOK_URL,
         { method: 'POST', body: formData }
       );
       if (!resp.ok) throw new Error(`Webhook error ${resp.status}`);
