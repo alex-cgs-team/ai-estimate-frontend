@@ -28,3 +28,4 @@ dist-ssr
 backend/.env*
 serviceAccountKey*.json
 backend/.env.staging
+backend/keys/
