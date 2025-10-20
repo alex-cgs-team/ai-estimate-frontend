@@ -1,0 +1,3593 @@
+{
+  "name": "AI-estimate",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "79c1c326-1af6-4c73-9194-6737b093b58d",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -18256,
+        3072
+      ],
+      "id": "6b26e2a1-3000-4e18-924a-ff680eca525c",
+      "name": "Webhook",
+      "webhookId": "79c1c326-1af6-4c73-9194-6737b093b58d"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Получаем все входные элементы\nconst items = $input.all();\n\nreturn items.map(item => {\n  const data = item.json;\n\n  // Если входной JSON — массив объектов, можно обрабатывать так:\n  // const array = Array.isArray(data) ? data : [data];\n  // Но обычно каждый элемент уже отдельный объект.\n\n  if (data.files && Array.isArray(data.files)) {\n    data.files = data.files.map(file => {\n      // Разбиваем по точкам и берём последний сегмент\n      const parts = file.filename.split('.');\n      const ext = parts.length > 1 ? parts.pop().trim().toLowerCase() : '';\n      return {\n        ...file,\n        fileType: ext\n      };\n    });\n  }\n\n  return {\n    json: data,\n    binary: item.binary\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -17824,
+        3072
+      ],
+      "id": "1effabf1-0696-4e18-a7e0-f5ba2683137e",
+      "name": "Handle files formats"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "6a9dab97-060f-4146-9eea-4df8c3bd8d2c",
+                    "leftValue": "={{$json.fileType}}",
+                    "rightValue": "={{ 'pdf' }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.fileType}}",
+                    "rightValue": "={{ 'docx' }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "b717f62d-b049-45bc-8e82-506e8ffaf93d"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9c5231f7-dc63-4215-ac7f-5b5500ae0417",
+                    "leftValue": "={{$json.fileType}}",
+                    "rightValue": "={{ 'csv' }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f4b9d207-90ea-4e20-9a6e-954330f424ab",
+                    "leftValue": "={{$json.fileType}}",
+                    "rightValue": "={{ 'png' }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cc52ab17-ea2c-4f8e-861b-5045c8a857dd",
+                    "leftValue": "={{$json.fileType}}",
+                    "rightValue": "={{ 'jpg' }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -17408,
+        3024
+      ],
+      "id": "fe1a6b53-dec1-4230-8743-8d41fc9f1fbd",
+      "name": "Route files via type"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16880,
+        3904
+      ],
+      "id": "a94e4127-06bd-4dd0-9fe3-924023f986b9",
+      "name": "Extract project name / notes"
+    },
+    {
+      "parameters": {
+        "jsCode": "const { files = [] } = items[0].json;\nconst binaries = items[0].binary || {};\nconst executionId = items[0].json.executionId || \"\";\nconst userId = items[0].json.userId || \"\";\n\nreturn files.map((file, i) => {\n  return {\n    json: {\n      number: i + 1,\n      userId,\n      executionId,\n      filename: file.filename,\n      description: file.description,\n      fileType: file.fileType,\n      binaryPropertyName: file.binaryPropertyName,\n    },\n    binary: {\n      file: binaries[file.binaryPropertyName],\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -17616,
+        3072
+      ],
+      "id": "f5e582dd-aa0a-4d8a-a2df-cc417c4b0247",
+      "name": "Get and filter ONLY files"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16576,
+        2272
+      ],
+      "id": "f1417181-3cbf-4528-98f6-8e82be37e352",
+      "name": "Initial docx handling"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16880,
+        3488
+      ],
+      "id": "251dd397-9d85-4446-ae30-1a58630b4792",
+      "name": "Initial PNG handling"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.aspose.cloud/connect/token",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "grant_type",
+              "value": "client_credentials"
+            },
+            {
+              "name": "client_id",
+              "value": "8adbb409-ccf1-4aa1-b95e-85e79ed55481"
+            },
+            {
+              "name": "client_secret",
+              "value": "d1209e5db87c55d7bc45e3fc8a34dd64"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -16368,
+        2272
+      ],
+      "id": "6fa59ada-bad7-4b8e-bb7c-94685ba7549a",
+      "name": "Get ASPOSE token"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -16176,
+        2128
+      ],
+      "id": "8757736e-2eb9-41fa-b76f-be334b711c7d",
+      "name": "MERGE docx files & ASPOSE token"
+    },
+    {
+      "parameters": {
+        "jsCode": "const allItems = $input.all();\n\nlet accessToken = '';\nlet executionId = '';\nlet userId = '';\nconst result = [];\n\n// Сначала найдём любой access_token\nfor (const item of allItems) {\n  if (item.json?.access_token) {\n    accessToken = item.json.access_token;\n    break;\n  }\n}\n\n// Потом находим executionId\nfor (const item of allItems) {\n  if (item.json?.executionId) {\n    executionId = item.json.executionId;\n    break;\n  }\n}\n\nfor (const item of allItems) {\n  if (item.json?.userId) {\n    userId = item.json.userId;\n    break;\n  }\n}\n\nif (!accessToken) {\n  throw new Error('❌ Access token not found');\n}\n\n// Теперь пройдёмся по каждому item и достанем binary\nlet fileIndex = 0;\n\nfor (const item of allItems) {\n  const binaries = item.binary || {};\n  const json = item.json || {};\n\n  for (const [binaryKey, binaryData] of Object.entries(binaries)) {\n    result.push({\n      json: {\n        executionId,\n        userId,\n        access_token: accessToken,\n        filename: json.filename || binaryData.fileName || `file_${fileIndex}.docx`,\n        fileType: json.fileType || binaryData.mimeType || '',\n        description: json.description || '',\n        binaryPropertyName: 'data'\n      },\n      binary: {\n        data: binaryData\n      }\n    });\n\n    fileIndex++;\n  }\n}\n\nif (result.length === 0) {\n  throw new Error('❌ No binary files found');\n}\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -15936,
+        2128
+      ],
+      "id": "1ccfca40-a407-40eb-baba-ba0256fcbd69",
+      "name": "Accept docx files & ASPOSE token"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -15696,
+        2128
+      ],
+      "id": "4775842e-030a-40fb-b75d-e31ed19f0d9d",
+      "name": "LOOP through DOCX files"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "https://api.aspose.cloud/v4.0/words/convert?format=md",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$json[\"access_token\"]}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -15120,
+        2144
+      ],
+      "id": "d8093c80-ee7e-4400-8baa-18d60826b3fa",
+      "name": "Convert docx into MD"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  const base64Data = item.binary.data.data;\n  const decodedString = \n    Buffer.from(base64Data, 'base64').toString('utf8');\n  \n  return {\n    json: {\n      content: decodedString\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -15376,
+        1968
+      ],
+      "id": "b4dc83c8-3d1f-4342-9929-b94fc31d4590",
+      "name": "Accept parsed DOCX content"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -16544,
+        1488
+      ],
+      "id": "47f8749a-573a-4302-a33f-70bf5a0b7e47",
+      "name": "LOOP over PDF docs"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "file",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -16176,
+        1504
+      ],
+      "id": "2964cee8-b07e-4298-8f3a-7b129e92f48b",
+      "name": "Get PDF content"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -16576,
+        1264
+      ],
+      "id": "48eeffaa-9e71-4d9a-a1fb-dbf715311168",
+      "name": "MERGE // PDF explanation & content"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -16352,
+        3568
+      ],
+      "id": "e796eda3-2df2-4527-ae64-9eb23cde0f28",
+      "name": "LOOP // recognize visual"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "grok-2-vision-1212",
+          "mode": "list",
+          "cachedResultName": "GROK-2-VISION-1212"
+        },
+        "text": "=You are a highly analytical visual interpreter. \n\nFilename: \"{{$json.filename}}\"\nDescription: \"{{$json.description}}\"\n\nYou will analyze a single image and produce a concise, process-focused summary of its essential meaning.\n\nInstructions:\n- Focus on the core idea, intent, and workflow implied by the image (inputs → processing/logic → outputs or outcomes).\n- Capture what is happening, why it matters, and what the system/user ultimately achieves.\n- Prefer verbs and causal links (ingest, transform, decide, publish, notify) over visual layout details.\n- Do NOT mention spatial positions, shapes, colors, arrows, UI elements, or that it is a diagram/graph/screenshot/image.\n- Avoid listing component names unless they are crucial to understanding the purpose.\n- Keep it factual; infer only what is strongly suggested by the content.\n\nOutput:\n- One coherent paragraph in clear professional English, summarizing the purpose, main inputs, key operations/logic, and the final result/action.\n",
+        "inputType": "base64",
+        "binaryPropertyName": "file",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -16000,
+        3584
+      ],
+      "id": "778eb57f-c093-409f-9cba-78936994ca5b",
+      "name": "Recognize Visual // xAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "8D5pkGIHJTDfSWJY",
+          "name": "Grok"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -16240,
+        3280
+      ],
+      "id": "2c591003-823d-432a-a58e-d9b1a1d810cf",
+      "name": "MERGE // visualisation description + content"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -15168,
+        1808
+      ],
+      "id": "2002b0d2-c457-405b-93de-4bbd07ab6c65",
+      "name": "MERGE // docx description + content"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Получаем все входные элементы как JSON\nconst items = $input.all().map(i => i.json);\n\n// Отбираем “файловые” объекты (есть filename и description)\nconst fileItems = items.filter(i => i.filename && i.description);\n\n// Отбираем объекты с контентом (есть поле content)\nconst contentItems = items.filter(i => i.content);\n\n// Формируем результирующий массив: для каждого файла берём соответствующий content по индексу\nconst unique = fileItems.map((file, idx) => {\n  return {\n    content: contentItems[idx]?.content || null,\n    explanation: file.description,\n    type: \"visual\",\n  };\n});\n\n// Возвращаем в формате n8n\nreturn unique.map(u => ({ json: u }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -14144,
+        3264
+      ],
+      "id": "a5a46515-9cb0-4763-9596-adbfb18dadcd",
+      "name": "Combine visual content + explanation"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1) Берём весь вход как массив элементов\nconst allItems = $input.all();\n\n// 2) Разделяем мета (есть filename) и парсинг (есть text)\nconst metaItems = allItems.filter(item => item.json.filename);\nconst parsedItems = allItems.filter(item => typeof item.json.content === 'string');\n\n// 3) Собираем результат по индексу\nconst result = metaItems.map((item, idx) => {\n  const m = item.json;\n  const p = parsedItems[idx]?.json || {};\n\n  return {\n    json: {\n      userId: m.userId,\n      executionId: m.executionId,\n      filename:    m.filename,\n      explanation: m.description,    // даже если пустая строка\n      content:     p.content || '',     // если парсера нет — пусто\n      type:        m.fileType || ''\n    }\n  };\n});\n\n// 4) Возвращаем\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -14896,
+        1808
+      ],
+      "id": "e6432e6a-27d1-4233-9a18-a4d37caa76e1",
+      "name": "Combine docx content + explanation"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1) Получаем все входные элементы\nconst allItems = $input.all();\n\nconst metaItems   = [];\nconst parsedItems = [];\n\n// 2) Разделяем метаданные и результаты парсера\nfor (const item of allItems) {\n  const { json } = item;\n  // Если у объекта есть filename + binaryPropertyName — это мета\n  if (json.filename && json.binaryPropertyName) {\n    metaItems.push(json);\n  }\n  // Если есть поле text — это результат парсинга\n  else if (typeof json.text === 'string') {\n    parsedItems.push(json);\n  }\n}\n\n// 3) Склеиваем по индексу и возвращаем массив из новых элементов\nconst result = [];\n\nfor (let i = 0; i < metaItems.length; i++) {\n  const meta   = metaItems[i];\n  const parsed = parsedItems[i] || {};\n\n  result.push({\n    json: {\n      userId: meta.userId,\n      executionId: meta.executionId,       // прокинули executionId из meta\n      filename:    meta.filename,\n      explanation: meta.description,       // может быть \"\" — нормально\n      content:     parsed.text  || '',     // текст парсера\n      type:        meta.fileType || ''     // pdf/csv/docx\n    }\n  });\n}\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -15136,
+        1248
+      ],
+      "id": "2c57aaf8-84fc-43d8-9823-5205a3b50943",
+      "name": "Combine PDF content + explanation"
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -12544,
+        2528
+      ],
+      "id": "944327e8-3283-4eaa-8570-403e9007fa8b",
+      "name": "MERGE ALL RESULTS"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -11696,
+        2400
+      ],
+      "id": "e5918f15-9443-4416-ae6d-12e3c196523a",
+      "name": "LOOP. CUT + GET chunks for each document"
+    },
+    {
+      "parameters": {
+        "jsCode": "const doc = $input.item.json;\n\nfunction cleanText(text) {\n  if (typeof text !== 'string') return '';\n  return text\n    .replace(/\\x00/g, '')  // нулевые байты\n    .replace(/[\\x00-\\x09\\x0B-\\x1F\\x7F-\\uFFFF]/g, '')  // не-печатные\n    .normalize('NFKC')  // нормализация unicode (для акцентов/спецсимволов)\n    .replace(/\\s+/g, ' ')  // пробелы в один\n    .replace(/(\\n\\s*\\n)+/g, '\\n\\n')  // удаляем лишние пустые строки (дубли абзацев)\n    .trim();\n}\n\nfunction chunkByChars(text, windowSize = 4000, overlapPercent = 20) {  // % вместо fixed overlap\n  const overlap = Math.floor(windowSize * (overlapPercent / 100));\n  const step = windowSize - overlap;\n  const chunks = [];\n  for (let pos = 0; pos < text.length; pos += step) {\n    const chunk = text.slice(pos, pos + windowSize);\n    if (chunk.length > 0) chunks.push(chunk);  // Избегаем пустых\n  }\n  // Dedup: Если последний чанк короче overlap, merge с предпоследним (fallback)\n  if (chunks.length > 1 && chunks[chunks.length - 1].length < overlap) {\n    chunks[chunks.length - 2] += chunks.pop();  // Merge tiny last\n  }\n  return chunks;\n}\n\n// Динамика по типу (пример: customize по doc.type)\nlet windowSize = 8000;\nlet overlapPercent = 20;\nif (doc.type === 'pdf') {  // Для dense PDF\n  windowSize = 6000;\n  overlapPercent = 25;  // Больше для continuity\n} else if (doc.type === 'docx') {\n  overlapPercent = 15;  // Меньше, если structured\n}\n\nconst cleaned = cleanText(doc.content);\nconst chunks = chunkByChars(cleaned, windowSize, overlapPercent);\n\nreturn chunks.map((chunkText, idx) => ({\n  json: {\n    userId: doc.userId,\n    type: doc.type,\n    executionId: doc.executionId,\n    explanation: doc.explanation,\n    chunkIndex: idx,\n    chunkText,\n    // Добавь мету для downstream: overlap size для AI промпта\n    overlapSize: idx > 0 ? chunkText.slice(0, Math.floor(windowSize * (overlapPercent / 100))).length : 0,\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -11392,
+        2432
+      ],
+      "id": "15bcb7bd-645a-45b9-ab3c-742efcec0336",
+      "name": " CUT + GET chunks for each document"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1) Собираем входные items как чистые JSON-объекты\nconst items = $input.all().map(i => i.json);\n\n// 2) Проверяем на пустой инпут (edge case)\nif (items.length === 0) {\n  console.warn('No items to process');\n  return [];\n}\n\n// 3) Группируем по ключу для подсчёта total chunks per doc (для меты)\nconst docGroups = items.reduce((acc, item) => {\n  // Robust key: fallback если type/explanation missing\n  const type = item.type || 'unknown';\n  const explanation = item.explanation || 'no_explanation';\n  const key = `${type}::${explanation}`;  // Можно добавить hash: `${key}::${Date.now()}` для uniqueness\n  \n  if (!acc[key]) {\n    acc[key] = { chunks: [], total: 0 };\n  }\n  acc[key].chunks.push(item);\n  acc[key].total++;\n  return acc;\n}, {});\n\n// 4) Присваиваем docId (sequential для traceability)\nlet docIdCounter = 0;\nconst docIdMap = {};\nObject.keys(docGroups).forEach(key => {\n  docIdMap[key] = docIdCounter++;\n});\n\n// 5) Итерируем по items (предполагаем sorted, иначе добавить sort по key+chunkIndex)\nlet prevKey = null;\nconst out = items.map((item, index) => {\n  const type = item.type || 'unknown';\n  const explanation = item.explanation || 'no_explanation';\n  const key = `${type}::${explanation}`;\n  \n  // Флаги\n  const isFirstChunk = key !== prevKey;\n  const isContinuation = !isFirstChunk;\n  \n  // Доп. мета\n  const docId = docIdMap[key];\n  const chunkTotal = docGroups[key].total;\n  const isLastChunk = (index === items.length - 1) || (items[index + 1] && `${items[index + 1].type}::${items[index + 1].explanation}` !== key);\n  \n  // Enriched с защитой\n  const enriched = {\n    ...item,\n    docId,  // Глобальный ID документа\n    isFirstChunk,\n    isContinuation,\n    isLastChunk,\n    chunkTotal,  // Полезно для progress или post-merge\n  };\n  \n  // Update prevKey\n  prevKey = key;\n  \n  // Debug log (убрать в prod)\n  console.log(`Processed chunk ${item.chunkIndex} for doc ${docId}`);\n  \n  return { json: enriched };\n});\n\n// 6) Возвращаем плоский массив (n8n format)\nreturn out;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -11392,
+        2272
+      ],
+      "id": "d87b879d-e6c1-419b-9977-0221a8328e14",
+      "name": "Handle chunks"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Из «сырых» AI-ответов (item.json) собирает плоский массив модулей\n */\nfunction extractAndParseJSON(raw) {\n  const s = String(raw || '')\n    .replace(/^\\uFEFF/, '')\n    .replace(/```json|```/g, '')\n    .trim();\n\n  const m = s.match(/(\\{[\\s\\S]*\\})/);\n  if (!m) throw new Error('JSON-блок не найден');\n\n  let obj = JSON.parse(m[1]);\n  if (typeof obj === 'string') obj = JSON.parse(obj);\n  return obj;\n}\n\nfunction parseAllModules(items) {\n  const modules = [];\n\n  for (const item of items) {\n    // вот тут берём payload из n8n-штампа\n    const resp = item.json;\n    const content = resp.choices?.[0]?.message?.content;\n    if (!content) continue;\n\n    try {\n      const parsed = extractAndParseJSON(content);\n      if (Array.isArray(parsed.modules)) {\n        // Фильтруем модули: только с completed: true\n        const filteredModules = parsed.modules.filter(mod => mod.completed === true);\n        modules.push(...filteredModules);\n      }\n    } catch (e) {\n      console.warn('Не смогли распарсить один из AI-ответов:', e);\n      continue;\n    }\n  }\n\n  return modules;\n}\n\n// 1) Собираем все модули в плоский массив\nconst flatModules = parseAllModules(items);\n\n// 2) Добавляем уникальный ID к каждому модулю (чанку)\nconst modulesWithID = flatModules.map((mod, index) => {\n  // Генерируем уникальный ID: timestamp + index (для простоты и уникальности в рамках запуска)\n  const uniqueID = `${Date.now()}-${index}`;  // Альтернатива: используй UUID, если доступен crypto: crypto.randomUUID()\n\n  return {\n    ...mod,  // Копируем все поля модуля\n    uniqueID  // Добавляем новое поле uniqueID (можно изменить на 'id' или другое)\n  };\n});\n\n// 3) Возвращаем их как n8n-овские items\n//    каждый item должен быть: { json: <объект модуля> }\nreturn modulesWithID.map(mod => ({ json: mod }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -9776,
+        2032
+      ],
+      "id": "2331e717-82d2-4a56-ba13-e7156b8def9c",
+      "name": "Parse & get modules"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "grok-3-fast",
+          "mode": "list",
+          "cachedResultName": "GROK-3-FAST"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a specialized architecture assistant responsible for categorizing software modules into two distinct groups:\n\nprimary: Core business-logic modules that implement the essential features and workflows of the product.\n\nsupport: Auxiliary modules such as documentation, legal text, configuration utilities, theming, or other helper services.\n\nTask:\n\nReview each module’s uniqueID, title, and content.\n\nAssess whether it delivers direct, mission‑critical functionality (primary) or supports it indirectly (support).\n\nReply only with a single JSON object exactly in this format:\n\n{\n  \"primary\": [ /* array of uniqueIDs */ ],\n  \"support\": [ /* array of uniqueIDs */ ]\n}\n\nExamples:\n\nExample 1 (4 modules)\n\nModules:\n\n[\n  { \"uniqueID\": \"A1\", \"title\": \"User Authentication\", \"content\": \"Handles login/logout, session management, password hashing, OAuth2 flows, and JWT token issuance.\" },\n  { \"uniqueID\": \"A2\", \"title\": \"Database Connector\", \"content\": \"Manages PostgreSQL connections, ORM mappings, migrations, and query optimizations.\" },\n  { \"uniqueID\": \"A3\", \"title\": \"Configuration Loader\", \"content\": \"Loads environment-specific settings, validates schema, and supports runtime refresh without restart.\" },\n  { \"uniqueID\": \"A4\", \"title\": \"Developer Guide\", \"content\": \"Markdown documentation with setup instructions, API examples, and architectural diagrams.\" }\n]\n\nExpected Response:\n\n{\n  \"primary\": [\"A1\", \"A2\"],\n  \"support\": [\"A3\", \"A4\"]\n}\n\nExample 2 (3 modules)\n\nModules:\n\n[\n  { \"uniqueID\": \"B1\", \"title\": \"Checkout Engine\", \"content\": \"Integrates Stripe and PayPal SDKs, handles order finalization, coupon codes, and payment retries.\" },\n  { \"uniqueID\": \"B2\", \"title\": \"Logging Service\", \"content\": \"Captures application events and errors, integrates with ELK and external log aggregators, and provides queryable audit trails.\" },\n  { \"uniqueID\": \"B3\", \"title\": \"API Documentation\", \"content\": \"Auto-generated OpenAPI spec with endpoints, schemas, authentication details, and code samples.\" }\n]\n\nExpected Response:\n\n{\n  \"primary\": [\"B1\", \"B2\"],\n  \"support\": [\"B3\"]\n}\n\nExample 3 (5 modules)\n\nModules:\n\n[\n  { \"uniqueID\": \"C1\", \"title\": \"Inventory Sync\", \"content\": \"Synchronizes stock levels between warehouse systems and storefront, with retry logic and delta updates.\" },\n  { \"uniqueID\": \"C2\", \"title\": \"Order Routing\", \"content\": \"Determines fulfillment center based on stock, location, and shipping rules, and dispatches orders.\" },\n  { \"uniqueID\": \"C3\", \"title\": \"Analytics Dashboard UI\", \"content\": \"Interactive React-based dashboards displaying sales KPIs, drill-down charts, and export functionality.\" },\n  { \"uniqueID\": \"C4\", \"title\": \"UI Theming Service\", \"content\": \"Applies brand colors, fonts, and layout presets dynamically based on user preferences.\" },\n  { \"uniqueID\": \"C5\", \"title\": \"Privacy Policy\", \"content\": \"Legal document outlining data collection, storage, user rights, and compliance measures.\" }\n]\n\nExpected Response:\n\n{\n  \"primary\": [\"C1\", \"C2\", \"C3\"],\n  \"support\": [\"C4\", \"C5\"]\n}\n\nYour Task:\n\nNow classify the following modules. Provide only the JSON output with arrays of uniqueIDs under primary and support.\n\nNo extra comments or explanation. Only JSON.\n\n{{ $json.modules.map((item) => (`\nModule uniqueID: ${item.uniqueID}\nModule title: ${item.title}\nModule content: ${item.content}\n`)) }}"
+            }
+          ]
+        },
+        "simplify": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -6576,
+        1824
+      ],
+      "id": "259aecb5-9707-4943-903f-97273ab06dfb",
+      "name": "Classify modules_xAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "8D5pkGIHJTDfSWJY",
+          "name": "Grok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -6800,
+        1808
+      ],
+      "id": "e83459b5-b42e-4086-8d32-b645880c2364",
+      "name": "loop // classify modules"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * n8n Function node script to:\n *   a) Parse AI responses into JSON\n *   b) Collect all module objects and classification responses\n *   c) Assign each module a classification based on AI answers\n *   d) Return an object with arrays of main and support modules\n *\n * Input: items[].json where each item.json is either:\n *   - { modules: [ {...module}, ... ] }\n *   - AI chat completion response object with .choices[0].message.content\n *\n * Output: single item with json:\n *   {\n *     mainModules: [...moduleObjects],\n *     supportModules: [...moduleObjects],\n *     classifications: [{ primary: [...ids], support: [...ids] }, ...]\n *   }\n */\n\n// 1. Collect all modules into a flat array\nconst allModules = [];\n// 2. Collect classification results\nconst classifications = [];\n\nfor (const item of items) {\n  const data = item.json;\n  // Detect module batch\n  if (Array.isArray(data.modules)) {\n    allModules.push(...data.modules);\n    continue;\n  }\n  // Detect AI response (chat completion structure)\n  if (data.choices && Array.isArray(data.choices) && data.choices.length > 0) {\n    const message = data.choices[0].message;\n    let content = message.content;\n    // In case content is a nested JSON string\n    try {\n      const parsed = typeof content === 'string' ? JSON.parse(content) : content;\n      const { primary = [], support = [] } = parsed;\n      classifications.push({ primary, support });\n    } catch (err) {\n      // Skip if parsing fails\n      console.warn('Failed to parse AI response:', content);\n    }\n  }\n}\n\n// 3. Assign classification to each module\nconst mainModules = [];\nconst supportModules = [];\n\n// Create a lookup map for quick assignment\nconst moduleMap = new Map();\nallModules.forEach(mod => moduleMap.set(mod.uniqueID, mod));\n\nfor (const cls of classifications) {\n  // Primary IDs\n  cls.primary.forEach(id => {\n    const mod = moduleMap.get(id);\n    if (mod) {\n      mod.classification = 'primary';\n      mainModules.push(mod);\n    }\n  });\n  // Support IDs\n  cls.support.forEach(id => {\n    const mod = moduleMap.get(id);\n    if (mod) {\n      mod.classification = 'support';\n      supportModules.push(mod);\n    }\n  });\n}\n\n// 4. Return a single consolidated object\nreturn [{\n  json: {\n    mainModules,\n    supportModules,\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6288,
+        1600
+      ],
+      "id": "0c1dd2db-0393-4744-ab1d-326479d5f86f",
+      "name": "Combine modules & classifications"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -6608,
+        1600
+      ],
+      "id": "e799fb25-67d5-47b6-a828-a598bc359cda",
+      "name": "MERGE // Modules & classifications"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * n8n Function node to generate enrichment clusters by batching main and support modules\n * into all combinations of individual batches (Cartesian product).\n *\n * Input (items[0].json):\n *   - mainModules: Array of core business modules\n *   - supportModules: Array of supporting modules\n *\n * Parameters:\n *   - mainBatchSize: number of modules per main batch (default: 5)\n *   - supportBatchSize: number of modules per support batch (default: 5)\n *\n * Algorithm:\n *   1. Split main and support modules into batches of the given size (last smaller batch is included).\n *   2. For each main batch i and each support batch j, create one cluster combining mainBatches[i] with supportBatches[j].\n *\n * Example with 18 mainModules and 11 supportModules (batchSize = 5):\n *   - mainBatches: 4 batches ([5,5,5,3])\n *   - supportBatches: 3 batches ([5,5,1])\n *   - Clusters generated: 4 x 3 = 12 clusters\n *     Cluster 1: main[0] x support[0]\n *     Cluster 2: main[0] x support[1]\n *     Cluster 3: main[0] x support[2]\n *     Cluster 4: main[1] x support[0]\n *     ...\n *     Cluster 12: main[3] x support[2]\n *\n * Output: Array of items, each item.json contains:\n *   { clusterIndex, mainBatch, supportBatch }\n */\n\nconst mainModules = items[0].json.mainModules || [];\nconst supportModules = items[0].json.supportModules || [];\nconst mainBatchSize = 15;\nconst supportBatchSize = 10;\n\n// Split an array into chunks; include final smaller chunk if any\nfunction chunkArray(arr, size) {\n  const chunks = [];\n  for (let i = 0; i < arr.length; i += size) {\n    chunks.push(arr.slice(i, i + size));\n  }\n  return chunks;\n}\n\nconst mainBatches = chunkArray(mainModules, mainBatchSize);\nconst supportBatches = chunkArray(supportModules, supportBatchSize);\n\nconst clusters = [];\nlet index = 1;\nfor (let i = 0; i < mainBatches.length; i++) {\n  for (let j = 0; j < supportBatches.length; j++) {\n    clusters.push({\n      json: {\n        clusterIndex: index++,\n        mainBatch: mainBatches[i],\n        supportBatch: supportBatches[j],\n      }\n    });\n  }\n}\n\nreturn clusters;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6080,
+        1600
+      ],
+      "id": "35eac795-ed98-41cd-b1ed-08567379d9be",
+      "name": "Create clusters for enrichment"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "grok-3-fast",
+          "mode": "list",
+          "cachedResultName": "GROK-3-FAST"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an expert architecture assistant responsible for identifying technical dependencies between core (main) modules and auxiliary (support) modules.\n\nInputs:\n\nmainBatch: an array of core modules, each with uniqueID, title, and content.\n\nsupportBatch: an array of supporting modules, each with uniqueID, title, and content.\n\n=== MAIN BATCH ===:\n{{ $json.mainBatch.map(item => `\n• UniqueID: [${item.uniqueID}] \nTitle: ${item.title}\nContent: ${item.content}`).join(\"\\n\") \n}}\n\n=== SUPPORT BATCH ===:\n{{ $json.supportBatch.map(item => `\n• UniqueID: [${item.uniqueID}] \nTitle: ${item.title}\nContent: ${item.content}`).join(\"\\n\") \n}}\n\n\nYour Task:\nFor each module in mainBatch, determine which modules in supportBatch it relies on to function or enrich its behavior. A dependency means the support module provides data, services, or configuration that the main module uses.\n\nRequirements:\n\nOutput only a JSON array of objects, one per main module:\n\n[\n  {\n    \"uniqueID\": \"<main uniqueID>\",\n    \"supporting_modules\": [\"<support uniqueID>\", …],\n    \"reason\": \"<concise technical explanation>\"\n  },\n  …\n]\n\nsupporting_modules: list of uniqueIDs the main module depends on, or an empty array if none.\n\nreason: a brief (1–2 sentences) technical justification for each dependency; use an empty string if no dependencies.\n\nInclude only actual dependencies—avoid listing support modules that aren’t used.\n\nPrioritize clarity and accuracy in your reasoning.\n\nExample:\nGiven:\n\nmainBatch: [\n  { \"uniqueID\":\"M1\", \"title\":\"Order Processor\", \"content\": \"Calculates totals, applies discounts, and finalizes orders.\" }\n]\nsupportBatch: [\n  { \"uniqueID\":\"S1\", \"title\":\"Discount Service\", \"content\": \"Validates and applies promotional codes.\" },\n  { \"uniqueID\":\"S2\", \"title\":\"Notification Service\", \"content\": \"Sends confirmation emails.\" }\n]\n\nExpected output:\n\n[\n  {\n    \"uniqueID\": \"M1\",\n    \"supporting_modules\": [\"S1\"],\n    \"reason\": \"The Order Processor applies discount logic, which relies on the Discount Service to validate and calculate promo codes.\"\n  }\n]\n\nProvide the JSON response only, without additional commentary.\n}\nNo extra comments or explanation. Only JSON.\nReason is required.\n\n{{ $json.modules.map((item) => (`\nModule uniqueID: ${item.uniqueID}\nModule title: ${item.title}\nModule content: ${item.content}\n`)) }}"
+            }
+          ]
+        },
+        "simplify": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -5568,
+        1600
+      ],
+      "id": "2fb2fe0a-ca0c-4072-a516-08d5927abe89",
+      "name": "Enrich main modules_xAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "8D5pkGIHJTDfSWJY",
+          "name": "Grok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * n8n Function node to merge AI dependency responses into clusters of main and support modules,\n * and return each main module only once with its supporting modules and reasons.\n *\n * Input: `items` - flat array of cluster objects and AI response objects.\n * Output: unique enriched main modules.\n */\n\n// Step 1: Separate clusters and AI responses\nconst clusters = [];\nconst responses = [];\nfor (const item of items) {\n  if (item.json && Array.isArray(item.json.mainBatch) && Array.isArray(item.json.supportBatch)) {\n    clusters.push(item.json);\n  } else if (item.json && item.json.choices) {\n    responses.push(item.json);\n  }\n}\n\n// Warn if counts mismatch\nif (clusters.length !== responses.length) {\n  console.warn(`Mismatched clusters (${clusters.length}) and responses (${responses.length})`);\n}\n\n// Collect enriched entries, keyed by uniqueID to dedupe\nconst enrichedMap = new Map();\n\nclusters.forEach((cluster, idx) => {\n  const ai = responses[idx] || {};\n  let deps = [];\n  const content = ai.choices?.[0]?.message?.content || '';\n\n  // Try parse JSON from AI response\n  try {\n    deps = JSON.parse(content.trim());\n  } catch (e) {\n    // Fallback: extract JSON from code fence\n    const m = content.match(/```json([\\s\\S]*?)```/i);\n    if (m) {\n      try { deps = JSON.parse(m[1].trim()); } catch {};\n    }\n  }\n\n  // Map support modules by uniqueID\n  const supportMap = new Map(cluster.supportBatch.map(s => [s.uniqueID, s]));\n\n  // For each main module, enrich and dedupe\n  (cluster.mainBatch || []).forEach(main => {\n    if (enrichedMap.has(main.uniqueID)) return;  // skip duplicates\n\n    // Find dependency entry for this main\n    const depEntry = deps.find(d => d.uniqueID === main.uniqueID) || {};\n    const supIds = Array.isArray(depEntry.supporting_modules) ? depEntry.supporting_modules : [];\n    const supportingModules = supIds.map(id => supportMap.get(id)).filter(Boolean);\n\n    enrichedMap.set(main.uniqueID, {\n      clusterIndex: cluster.clusterIndex,\n      uniqueID: main.uniqueID,\n      title: main.title,\n      content: main.content,\n      supportingModules,\n      reason: depEntry.reason || ''\n    });\n  });\n});\n\n// Return unique enriched main modules\nreturn Array.from(enrichedMap.values()).map(entry => ({ json: entry }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5360,
+        1264
+      ],
+      "id": "29c47808-1622-4a65-9bde-b9e4163bed4c",
+      "name": "Enrich main modules"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * n8n Function node to split enriched main modules into batches of a specified size.\n *\n * Input: items is an array where each item.json is an enriched main module object, e.g.: \n *   {\n *     clusterIndex: 1,\n *     uniqueID: \"1753799519686-1\",\n *     title: \"UC-1: ...\",\n *     content: \"...\",\n *     supportingModules: [...],\n *     reason: \"...\"\n *   }\n *\n * Configuration:\n *   - batchSize: number of modules per batch (default = 5)\n *\n * Output: each n8n item represents a batch with structure:\n *   {\n *     json: {\n *       batchIndex: <number>,\n *       modules: [<array of up to batchSize enriched modules>]\n *     }\n *   }\n */\n\n// Adjust batchSize as needed\nconst batchSize = 15;\n\n// Extract all enriched main modules from incoming items\nconst modules = items.map(item => item.json);\n\n// Split into batches\nconst batches = [];\nfor (let i = 0; i < modules.length; i += batchSize) {\n  batches.push(modules.slice(i, i + batchSize));\n}\n\n// Return each batch as a separate item\nreturn batches.map((batch, index) => ({\n  json: {\n    batchIndex: index + 1,\n    modules: batch,\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5120,
+        1264
+      ],
+      "id": "aa0a93f5-f2f4-4fa5-8285-f39d60480b03",
+      "name": "Create batches of enriched modules"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -4848,
+        1264
+      ],
+      "id": "8974a1a5-12dd-4a38-b745-384c2d2128e4",
+      "name": "loop // Get features"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * n8n Function node: Preprocess for iterative feature generation.\n *\n * For each incoming batch item, attach the previous iteration's features and\n * a flag if this is the last batch, so the LLM can accumulate context.\n *\n * Input items: current batch items (one per batch).\n * Uses $runIndex and 'Get features_xAI' node to fetch prior responses.\n *\n * Output items: array where each item.json contains:\n *  - batchIndex: number\n *  - modules: current batch modules (from item.json.modules)\n *  - previousFeatures: array of feature objects from last iteration, or []\n *  - isLastBatch: boolean\n */\n\nconst newItems = [];\nconst totalBatches = items.length;\n\nfor (let i = 0; i < items.length; i++) {\n  const current = items[i].json;\n  // Determine if this is the last batch\n  const isLastBatch = (i === totalBatches - 1);\n\n  // Fetch previous features from 'Get features_xAI' node\n  let prevFeatures = [];\n  if ($runIndex > 0) {\n    const prevNode = $('Get features_xAI').first(0, $runIndex - 1).json;\n    const content = prevNode.choices?.[0]?.message?.content;\n    if (content && typeof content === 'string') {\n      let text = content.trim();\n      try {\n        prevFeatures = JSON.parse(text);\n      } catch (e) {\n        // Strip markdown fences if present\n        const m = text.match(/```json\\s*([\\s\\S]*?)\\s*```/i);\n        if (m) {\n          try { prevFeatures = JSON.parse(m[1].trim()); } catch {};\n        }\n      }\n      // Ensure array\n      if (!Array.isArray(prevFeatures)) prevFeatures = [];\n    }\n  }\n\n  // Construct new item\n  newItems.push({ json: {\n    batchIndex: current.batchIndex,\n    modules: current.modules,\n    previousFeatures: prevFeatures,\n    isLastBatch,\n  }});\n}\n\nreturn newItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4560,
+        1264
+      ],
+      "id": "1166e686-c8fa-44a1-acc1-7b9b8bbd7598",
+      "name": "Get features // preprocess"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "grok-3-fast",
+          "mode": "list",
+          "cachedResultName": "GROK-3-FAST"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a strategic product architect. Your goal is to iteratively convert batches of enriched main modules into a comprehensive list of high-level product features.\nInput:\n\nBatch {{ $json.batchIndex }} of main modules:\n\ntext{{ $json.modules.map(m =>\n  `\n======= NEW MAIN MODULE ========\nmodule uniqueID: ${m.uniqueID}\ntitle: ${m.title}\nContent: ${m.content}\n    ==== Dependencies // Supporting information OF MODULE ${m.uniqueID}: ====` + (\n      m.supportingModules.length\n        ? m.supportingModules.map(s => `\n        ${s.content}`).join('')\n        : ' none'\n    ) + `\n    Reason: ${m.reason || \"\"}`\n).join(\"\\n\\n\") }}\n\nPreviously generated features (iterations 1 to N-1):\n\ntext{{ $json.previousFeatures.length > 0\n   ? $json.previousFeatures.map(f =>\n       `- ${f.featureID}: ${f.featureName}\n Modules: [${f.moduleIDs.join(\", \")}]\n`).join(\"\\n\")\n   : 'none'\n}}\n\nisLastBatch: {{ $json.isLastBatch }}\nRemember: Modules may overlap when justified, but minimize unnecessary duplication.\n\nExample of Overlap and Consolidation:\nIf a module is central to multiple features, it can appear in each (e.g., a notifications module in both 'Notifications' and 'Messaging'). However, group related modules into cohesive features to reduce the total number. For example:\njson[\n  {\n    \"featureID\": \"F1\",\n    \"featureName\": \"User Onboarding\",\n    \"moduleIDs\": [\"M1\",\"M2\",\"M3\"]\n  },\n  {\n    \"featureID\": \"F2\",\n    \"featureName\": \"In-Platform Communication\",\n    \"moduleIDs\": [\"M3\",\"M4\"]\n  }\n]\nHere, module M3 (notifications) is shared because it supports both onboarding and communication. Combine related modules like 'AI Project Templates', 'Sample Projects', and 'Tutorials' into one 'User Onboarding' feature if they serve the same user goal.\nTask:\n\nReview the modules in this batch and the existing feature list.\nFor each module, decide if it should join an existing feature (add its uniqueID to that feature’s moduleIDs) or if it warrants creating a new feature.\nGroup modules into the smallest number of cohesive features possible (aim for 8–12 features for a complex system). Merge modules that share a common workflow, user goal, or domain (e.g., combine onboarding, profile setup, and email integration into one 'User Onboarding' feature). Create new features only if the module introduces a distinctly separate capability that doesn’t fit any existing one reasonably.\nAvoid creating features solely based on user roles (e.g., 'C-Level Tools'). Distribute role-specific capabilities across functional features (e.g., C-Level reporting in 'Project Analytics').\nMaintain feature continuity across iterations. On the final batch (isLastBatch=true), review all features and merge those with overlapping goals or domains (e.g., combine 'Risk Management' and 'Reporting' if both involve AI-driven data analysis). Ensure all modules are assigned and aim for a minimal, cohesive set (e.g., 8–12 features total).\nEach feature object must include:\n\nfeatureID: a stable alphanumeric code (e.g., F1, F2).\nfeatureName: a clear, descriptive title (up to 1 sentence). Keep names concise and high-level, avoiding over-specification or role-specific terms unless essential.\nmoduleIDs: array of all uniqueIDs included so far.\n\n\n\nOutput:\nReturn only a JSON array of updated feature objects in this exact format:\n```\n[\n  {\n    \"featureID\": \"F1\",\n    \"featureName\": \"...\",\n    \"moduleIDs\": [\"id1\",\"id2\",...]\n  },\n  ...\n]\nNo additional text or formatting.\nCriteria:\n\nGroup related capabilities into cohesive features to minimize the total number. Merge sub-capabilities (e.g., tutorials, templates, profile setup) into a single feature like 'User Onboarding' unless they serve fundamentally different user goals (e.g., onboarding vs. reporting).\nMinimize module overlaps by assigning each module to the most relevant feature. Common infrastructure modules (e.g., navigation buttons, UI elements) should be included in a single 'Core Platform Infrastructure' feature unless critical to a specific workflow.\nFeature names should be descriptive, precise, and concise (1 sentence).\nAlways include the full list of features from the previous iteration unchanged, then merge in updates or additions for this batch, appending any new features at the end.\nDo not omit any modules by final iteration.\nEnsure JSON is valid and parsable. Only JSON, no extra comments or explanation."
+            }
+          ]
+        },
+        "simplify": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -4320,
+        1264
+      ],
+      "id": "c0478b37-2ab2-456c-9087-84a7b985c9ed",
+      "name": "Get features_xAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "8D5pkGIHJTDfSWJY",
+          "name": "Grok"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -4560,
+        1088
+      ],
+      "id": "2f8b3597-48c5-4f8b-922d-27ccd6f8dfba",
+      "name": "MERGE // Features & Enriched modules"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * n8n Function node to enrich LLM-generated feature lists with full module details.\n *\n * Input: items is a flat array of JSONs, where some items are batch definitions\n * (with batchIndex and modules[]) and others are AI responses (chat.completion objects).\n *\n * Task:\n * 1. Find the last AI response (chat.completion) and parse its JSON content as an array of features.\n * 2. Collect all module objects from the batch items.\n * 3. For each feature, look up its moduleIDs in the module map and attach the full module objects\n *    as a new field `modules` on the feature.\n * 4. Return each enriched feature as a separate n8n item.\n *\n * Output: items[].json = {\n *   featureID, featureName, moduleIDs, modules: [<full module objects>]\n * }\n */\n\n// 1. Separate AI responses and batch data\nconst batches = [];\nlet lastAIContent = null;\n\nitems.forEach(item => {\n  const data = item.json;\n  // Detect AI response\n  if (data.object === 'chat.completion' && Array.isArray(data.choices)) {\n    const content = data.choices[0].message.content;\n    lastAIContent = content;\n  }\n  // Detect batch data\n  else if (typeof data.batchIndex === 'number' && Array.isArray(data.modules)) {\n    batches.push(data);\n  }\n});\n\nif (!lastAIContent) {\n  throw new Error('No AI response (chat.completion) found in input items.');\n}\n\n// 2. Parse features from the last AI response\nlet features;\ntry {\n  features = JSON.parse(lastAIContent);\n} catch (e) {\n  // Fallback: strip code fences\n  const match = lastAIContent.match(/```json\\s*([\\s\\S]*?)\\s*```/i);\n  if (match) {\n    features = JSON.parse(match[1].trim());\n  } else {\n    throw new Error('Failed to parse JSON from AI response content.');\n  }\n}\n\n// 3. Build module map from all batches\nconst allModules = batches.flatMap(b => b.modules);\nconst moduleMap = new Map(allModules.map(m => [m.uniqueID, m]));\n\n// 4. Enrich features by attaching full module objects\nconst enriched = features.map(feature => {\n  const fullModules = Array.isArray(feature.moduleIDs)\n    ? feature.moduleIDs.map(id => moduleMap.get(id)).filter(Boolean)\n    : [];\n  return {\n    ...feature,\n    modules: fullModules\n  };\n});\n\n// 5. Return each enriched feature as an n8n item\nreturn enriched.map(f => ({ json: f }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4336,
+        1088
+      ],
+      "id": "6b76078f-a441-4e7e-bbf2-816cd08ed128",
+      "name": "Connect modules to features"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * n8n Function node to split incoming modules into batches of specified size.\n * Assumes input items have module objects in item.json.\n * Returns each batch as a separate item with json.modules = array of module objects.\n */\nconst batchSize = 25; // adjust batch size if needed\n\n// Extract modules from incoming items\nconst modules = items.map(item => item.json);\n\n// Chunk modules into batches\nconst batches = [];\nfor (let i = 0; i < modules.length; i += batchSize) {\n  batches.push(modules.slice(i, i + batchSize));\n}\n\n// Return each batch as a separate n8n item\nreturn batches.map(batch => {\n  return {\n    json: {\n      modules: batch,\n    },\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7664,
+        1792
+      ],
+      "id": "bb7b8022-74bd-478e-91b0-0421943a7ee3",
+      "name": "Create modules batches // 1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -3360,
+        1312
+      ],
+      "id": "0a085c92-e328-43ea-891f-7d362c511f3e",
+      "name": "MERGE // Potential platforms & Features"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * n8n Function node to batch together enriched feature objects with platform detection info.\n *\n * Input:\n * - One item with json.features array\n * - One item with platform detection info: platformsMentioning, mentions\n *\n * Output: each item.json = {\n *   featureID,\n *   featureName,\n *   moduleIDs,\n *   modules,\n *   platformsMentioning,\n *   platformMentions\n * }\n */\n\n// Найти объект с features\nconst featuresObj = items.find(item => Array.isArray(item.json.features))?.json;\nconst features = featuresObj?.features || [];\n\n// Найти объект с платформами\nconst platformInfo = items.find(item => Array.isArray(item.json.platformsMentioning) && Array.isArray(item.json.mentions))?.json || { platformsMentioning: [], mentions: [] };\n\n// Комбинируем каждую feature с платформенной информацией\nconst output = features.map(f => ({\n  json: {\n    featureID: f.featureID,\n    featureName: f.featureName,\n    moduleIDs: f.moduleIDs,\n    modules: f.modules,\n    platformsMentioning: platformInfo.platformsMentioning,\n    platformMentions: platformInfo.mentions\n  }\n}));\n\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2208,
+        1392
+      ],
+      "id": "cbcbd5e8-c943-4344-b91a-70535943eeb0",
+      "name": "Create features batches with platforms"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1632,
+        1392
+      ],
+      "id": "307664c2-2d8a-48eb-99de-ab888ba1d802",
+      "name": "loop // Get project features & sub-tasks"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "grok-3-fast",
+          "mode": "list",
+          "cachedResultName": "GROK-3-FAST"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Ты — профи в архитектуре приложений. Для фичи {{ $json.featureName }} сгенерируй:\n\n1-4 суб-фичи, группируя входные модули по пользовательским целям и процессам (например, объедини \"Email Integration\" и \"Calendar Sync\" в \"Communication Hub\").\n\nКаждая суб-фича — функциональный компонент фичи, решающий подзадачу пользователя (например, \"Project Template Setup\").\n\nИспользуй модули просто как часть описания функционала фичи. \nДумать что каждый модуль - отдельная саб-фича - неверно.\nОдин модуль может иметь две саб фичи или даже 3 (как ты считаешь). В то же время два модуля могут говорить об одном и том же и характеризовать одну саб-фичу.\n\nИспользуй title и uniqueID из входных модулей для распределения, но не создавай суб-фичи один-к-одному — консолидируй логически.\n\nДалее к каждой саб-фиче тебе нужно будет сделать саб-задачи:\n\nПодзадачи для каждой суб-фичи:\n5–12 требований в инфинитиве на английском, отражающих конкретно, чтобы клиенту было понятно конкретную задачу с технической точки зрения, например:\n\nУ тебя есть Саб-фича:\n\nNotifications:\nПод нее будут хорошо метчится следующие саб-задачи (условно например).\n\n- Implement Firebase integration for sending / receiving notifications\n- Implement UI component for notifications (success notification / error notification)\n- Add an ability for admin to schedule notification time via admin panel\n- ...\n- ...\n\nОпять же их может быть много в зависимости от того насколько сложно описан модуль с Supporting modules вместе.\n\nОбрати внимание что в каждом модуле есть Supporting modules для зависимостей. Учитывай их контент и смысл также.\n\nФормат вывода — JSON-массив:\nglobal_feature_id: {{ $json.featureID }} (например, \"F1\").\nfeatureName: {{ $json.featureName }}.\nsub_features: массив с:\n- subFeatureID: сгенерированный уникальный ID (например, \"SF1-1\").\n- subFeatureName: чёткое имя (3-5 слов).\n- description: краткое описание ценности (1–2 предложения, на основе объединённых модулей).\n- subtasks: массив 5–12 подзадач, покрывающих суб-фичу полностью.\n\nВходные данные:\n\n{{ $json.modules.map((item, index) => (`\n=== ${index +1} модуль для ${$json.featureName}\nmoduleID: ${item.uniqueID}\nTitle: ${item.title}\nContent: ${item.content}\n${item.supportingModules.length > 0 ? `Зависимости:` : \"\"}\n${item.supportingModules.map((supportModule) => (`\n  ${supportModule.title}: ${supportModule.content}\n  Причина: ${item.reason}\n`)).join(\"\\n\")}\n`)).join(\"\\n\") }}\n\n\nСтарайся группировать по пользовательским целям (например, \"Email and Calendar Integration\" + \"Meeting Management\" в \"Communication and Scheduling\").\nПеренеси модули в новую структуру, сохраняя moduleID и подзадачи.\nПример: Перенеси \"C-Level System-Wide Settings\" в \"System Configuration\", а \"Risk and Issue Management\" в \"AI-Powered Analytics\".\nУбедись, что все модули распределены, а роль-специфичные модули обобщены.\n\nПустой батч:\n\nЕсли modules пустой, верни: // No modules provided for {{ $json.featureName }} и [].\n\nВалидация:\n\nЕсли uniqueID отсутствует или дублируется, верни: // Invalid or duplicate moduleID for {{ $json.featureName }} и [].\n\nПример вывода:\njson[\n  {\n    \"global_feature_id\": \"F1\",\n    \"featureName\": \"User Onboarding and Setup\",\n    \"modules\": [\n      {\n        \"moduleID\": \"1755785348798-1\",\n        \"moduleName\": \"Project Template Creation\",\n        \"description\": \"Helps users start projects faster with AI-tailored templates.\",\n        \"subtasks\": [\n          \"Suggest templates based on role\",\n          \"Allow manual template selection\",\n          \"Support multi-language descriptions\",\n          \"Integrate with user profile\",\n          \"Validate template compatibility\",\n          \"Guide users via tutorial\"\n        ]\n      }\n    ]\n  }\n]\nOutput: Только JSON-массив. Для ошибок или пустого батча — комментарий и []."
+            }
+          ]
+        },
+        "simplify": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -1360,
+        1472
+      ],
+      "id": "d2362e37-e010-4444-96ca-682aa89f5d66",
+      "name": "Get projects features & subtasks_xAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "8D5pkGIHJTDfSWJY",
+          "name": "Grok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        32,
+        1120
+      ],
+      "id": "5e42891a-26aa-4405-9988-bfaeb56efa54",
+      "name": "loop // Get questions"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "grok-3-fast",
+          "mode": "list",
+          "cachedResultName": "GROK-3-FAST"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Ты работаешь как AI Solution Architect, помогаешь сформировать вопросы для оценки фич перед разработкой.\n\nТебе нужно сгенерировать список уточняющих вопросов для фичи {{ $json.featureName }}.\n\n---\n\nЦель: выявить пробелы, допущения и уточнить ключевые детали по каждой САБ-ФИЧЕ основываясь на описании ФИЧИ (описание разделено на блоки, мы называем их модулями).\n\nКаждый `module` описывает функциональность, а также у него есть `supportingModules` — это зависимые/дополняющие под-модуля, на которые он опирается.\n\n---\n\nТвоя задача:\n\n1. Для каждой САБ-ФИЧИ сформируй список конкретных вопросов исходя из описания ФИЧИ.\n2. Вопросы могут относиться к:\n   - UX: интерфейс, поведение, кастомизация\n   - Functional: что должно происходить, как обрабатывается логика\n   - Integrations: внешние системы, API, зависимости\n   - Constraints: ограничения, перформанс, конфликты\n3. Вопросов может быть и 2 и 15, формируй их основываясь на критичности пропуска.\n4. Помни, вопросы нужно формировать ДЛЯ САБ-ФИЧ и НА БАЗЕ МОДУЛЕЙ (+supporting модулей).\n6. Избегай дублирующих, тривиальных и очевидных вопросов.\n\nТо есть если я тебе скидываю описание фичи с ее модулями (+ supporting модулями), а ниже скидываю САБ-ФИЧИ (name + description), скажем у нас 4 саб-фичи - то твоя задача вернуть массив вопросов по каждой саб-фиче на базе описания (модулей + саппортинг модулей).\n\n---\n\nФормат вывода (ТОЛЬКО JSON. no extra comments or explanation)\n```\n[\n  {\n    \"subFeatureId\": \"SF14-1\", (например)\n      \"questions\": [\n          \"What user inputs should drive AI template suggestions?\",\n          \"How should the system prioritize templates by role or industry?\",\n          \"What happens if a user skips the tutorial — how does that affect suggestions?\",\n          \"Which profile preferences influence the AI template selection?\"\n      ]\n  }\n]\n\nДанные:\n\nВходные данные (модули + supporting модули):\n{{ $json.modules.map((item, index) => (`\n=== Module ${index +1} for ${$json.featureName}\nmoduleID: ${item.uniqueID}\nTitle: ${item.title}\nContent: ${item.content}\n${item.supportingModules.length > 0 ? `Dependencies:` : \"\"}\n${item.supportingModules.map((supportModule) => (`\n  ${supportModule.title}: ${supportModule.content}\n  Reason: ${item.reason}\n`)).join(\"\\n\")}\n`)).join(\"\\n\") }}\n\n\nСаб-фичи по которым нужно сделать вопросы:\n\n{{ $json.subFeaturesSummary.map((item) => (`\nSub-feature ID: ${item.id}\nSub-feature name: ${item.name}\nSub-feature description: ${item.description}\n`)) }}"
+            }
+          ]
+        },
+        "simplify": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        288,
+        1152
+      ],
+      "id": "2ffdb13b-328e-4681-a4ac-df36cbbdbe3e",
+      "name": "Get questions_xAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "8D5pkGIHJTDfSWJY",
+          "name": "Grok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "name": "={{ $json.project_name}} // Estimate",
+        "driveId": {
+          "__rl": true,
+          "value": "0AMbZSKPN819CUk9PVA",
+          "mode": "id"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -16640,
+        3904
+      ],
+      "id": "e88a1090-d43e-4a40-9bd3-dbb2a53f868b",
+      "name": "Create project folder",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "TL5yPjT41iqbbip2",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "copy",
+        "fileId": {
+          "__rl": true,
+          "value": "1Y8MXdNv7FyVQbTff1eOc2ZdDyqLY0H71gSOsICOUME8",
+          "mode": "id"
+        },
+        "name": "={{ $json.project_name }} // Estimate",
+        "sameFolder": false,
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $json[\"id\"] }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -15936,
+        4032
+      ],
+      "id": "4f5ed456-5ae2-42eb-b928-950406a2a6b7",
+      "name": "Create estimate file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "TL5yPjT41iqbbip2",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -16416,
+        4032
+      ],
+      "id": "37b20d02-4738-475e-ae55-a039ef6144d2",
+      "name": "MERGE Google.cloud metadata"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Вставьте этот код в узел Function в n8n\n\n// Найти элемент с данными папки Google Drive\nconst folderItem = items.find(i =>\n  i.json.kind === 'drive#file' &&\n  i.json.mimeType === 'application/vnd.google-apps.folder'\n);\n\n// Найти элемент с именем проекта\nconst projectItem = items.find(i =>\n  i.json.project_name !== undefined\n);\n\n// Вернуть только id папки и имя проекта\nreturn [\n  {\n    json: {\n      id: folderItem?.json.id || null,\n      project_name: projectItem.json.project_name\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16208,
+        4032
+      ],
+      "id": "5f7a18e7-587a-4ac7-9e88-724d0739616c",
+      "name": "Convert metadata"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        2576,
+        1088
+      ],
+      "id": "3e8bfe41-f784-4a83-90e3-27b6f825f145",
+      "name": "PREPARE data for publishing"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Берём массив features из первого элемента, если он есть\nconst features = items[0]?.json?.data || [];\n\n// Собираем данные платформ (platformsMentioning + mentions)\nconst platformData = {\n  platformsMentioning: items[0]?.json?.platformsMentioning || [],\n  mentions: items[0]?.json?.mentions || []\n};\n\n// Собираем метаданные таблицы (если есть)\nconst spreadsheet = {\n  kind: items[0]?.json?.kind || '',\n  id: items[0]?.json?.id || '',\n  name: items[0]?.json?.name || '',\n  mimeType: items[0]?.json?.mimeType || ''\n};\n\n// Возвращаем единый объект\nreturn [\n  {\n    json: {\n      features,\n      platformDetection: platformData,\n      spreadsheet\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2800,
+        1088
+      ],
+      "id": "513ac37c-c551-4c83-aab4-8a747a367f6c",
+      "name": "Accept data for publishing"
+    },
+    {
+      "parameters": {
+        "url": "=https://sheets.googleapis.com/v4/spreadsheets/{{$json.spreadsheet.id}}?fields=sheets.properties",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3136,
+        1248
+      ],
+      "id": "a0ea9e74-a2e0-467c-a343-d925b669a927",
+      "name": "Get estimate file metadata",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "TL5yPjT41iqbbip2",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        3456,
+        1104
+      ],
+      "id": "08970962-ac2d-4391-a1ed-94bf91460f36",
+      "name": "MERGE // Publishing data & Estimate metadata"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Вставьте этот код в узел Function в n8n\n\n// 1. Найти item с полем features\nconst featuresItem = items.find(item =>\n  Array.isArray(item.json.features)\n);\n\n// 2. Найти item с полем platformDetection\nconst platformItem = items.find(item =>\n  item.json.platformDetection && typeof item.json.platformDetection === 'object'\n);\n\n// 3. Найти item с полем spreadsheet (метаданные таблицы)\nconst spreadsheetItem = items.find(item =>\n  item.json.spreadsheet && typeof item.json.spreadsheet === 'object'\n);\n\n// 4. Найти item с полем sheets (список листов)\nconst sheetsItem = items.find(item =>\n  Array.isArray(item.json.sheets)\n);\n\nif (!featuresItem || !platformItem || !spreadsheetItem || !sheetsItem) {\n  throw new Error('One or more required inputs (features, platformDetection, spreadsheet, sheets) not found');\n}\n\n// 5. Собрать единый объект с четырьмя полями\nconst result = {\n  features: featuresItem.json.features,\n  platformDetection: platformItem.json.platformDetection,\n  spreadsheet: spreadsheetItem.json.spreadsheet,\n  sheets: sheetsItem.json.sheets\n};\n\n// 6. Вернуть результат\nreturn [\n  {\n    json: result\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3680,
+        1104
+      ],
+      "id": "943060fa-1ccc-4fdc-b874-07ec3629db9c",
+      "name": "Combine metadata + publishing data"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Вставьте этот код в узел Function в n8n\n\n// 1) Находим item с массивом features\nconst featuresItem = items.find(it => Array.isArray(it.json?.features));\nif (!featuresItem) {\n  throw new Error('Features item not found');\n}\nconst features = featuresItem.json.features;\n\n// 2) Нормализуем единицы для записи строк:\n// - старый формат: features = [{ modules: [...] }, ...] -> берём все modules\n// - новый формат: features = [{ subFeatureId, name, description, subtasks, questions }, ...] -> берём как есть\nlet units = [];\nif (features.length && features.some(g => Array.isArray(g?.modules))) {\n  units = features.flatMap(g => Array.isArray(g.modules) ? g.modules : []);\n} else {\n  units = features;\n}\n\n// 3) spreadsheetId и метаданные листов\nconst spreadsheetId = featuresItem.json?.spreadsheet?.id;\nif (!spreadsheetId) {\n  throw new Error('Spreadsheet ID not found');\n}\nconst sheetsMetaItem = items.find(it => Array.isArray(it.json?.sheets));\nif (!sheetsMetaItem) {\n  throw new Error('Sheets metadata not found');\n}\nconst defaultSheet = sheetsMetaItem.json.sheets.find(s => s?.properties?.title === 'default sheet');\nif (!defaultSheet) {\n  throw new Error('Default sheet not found');\n}\nconst sheetId = defaultSheet.properties.sheetId;\n\n// 4) Начальная строка (6-я визуально)\nlet rowIndex = 5;\n\n// 5) Колонки\nconst COL_FEATURE   = 0; // A: название (MODULE/NAME)\nconst COL_DETAILS   = 1; // B: описание + сабтаски\nconst COL_QUESTIONS = 7; // H: вопросы\nconst COL_SUGGESTED = 8; // I: suggested (если есть)\n\n// Хелперы\nconst toNumberedList = (arr) => (Array.isArray(arr) ? arr : [])\n  .filter(v => typeof v === 'string' && v.trim())\n  .map((t, i) => `${i + 1}) ${t}`)\n  .join('\\n');\n\nconst textOrEmpty = (v) => typeof v === 'string' ? v.trim() : '';\n\n// 6) Собираем batchUpdate requests\nconst requests = [];\n\nfor (const u of units) {\n  // Имя модуля / сабфичи (поддержка старого и нового форматов)\n  const moduleName = textOrEmpty(u.moduleName || u.name || u.title || u.subFeatureId || '');\n  if (moduleName) {\n    requests.push({\n      updateCells: {\n        start: { sheetId, rowIndex, columnIndex: COL_FEATURE },\n        rows: [{ values: [{ userEnteredValue: { stringValue: moduleName.toUpperCase() } }] }],\n        fields: 'userEnteredValue'\n      }\n    });\n  }\n\n  // Детали: описание + нумерованный список сабтасков\n  const description = textOrEmpty(u.shortDescription || u.description || u.content || '');\n  const subtasksText = toNumberedList(u.subtasks);\n  const detailsText = [description ? `- ${description}` : '', subtasksText].filter(Boolean).join('\\n\\n');\n\n  if (detailsText) {\n    requests.push({\n      updateCells: {\n        start: { sheetId, rowIndex, columnIndex: COL_DETAILS },\n        rows: [{ values: [{ userEnteredValue: { stringValue: detailsText } }] }],\n        fields: 'userEnteredValue'\n      }\n    });\n  }\n\n  // Вопросы (новый формат)\n  const questionsText = toNumberedList(u.questions);\n  if (questionsText) {\n    requests.push({\n      updateCells: {\n        start: { sheetId, rowIndex, columnIndex: COL_QUESTIONS },\n        rows: [{ values: [{ userEnteredValue: { stringValue: questionsText } }] }],\n        fields: 'userEnteredValue'\n      }\n    });\n  }\n\n  // Suggested features (если вдруг присутствуют)\n  if (Array.isArray(u.assigned_suggested_features) && u.assigned_suggested_features.length) {\n    const sugText = u.assigned_suggested_features\n      .map((s, i) => `${i + 1}) ${s.feature || s.name || 'Feature'}: ${textOrEmpty(s.reasoning) || 'No reasoning provided'}`)\n      .join('\\n\\n');\n\n    requests.push({\n      updateCells: {\n        start: { sheetId, rowIndex, columnIndex: COL_SUGGESTED },\n        rows: [{ values: [{ userEnteredValue: { stringValue: sugText } }] }],\n        fields: 'userEnteredValue'\n      }\n    });\n  }\n\n  rowIndex++;\n}\n\n// 7) Возвращаем тело batchUpdate\nreturn [{\n  json: {\n    spreadsheetId,\n    requests\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3888,
+        1104
+      ],
+      "id": "3443c769-137f-4af6-aade-d3c32ac8c94d",
+      "name": "Prepare data for injecting"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://sheets.googleapis.com/v4/spreadsheets/{{$json[\"spreadsheetId\"]}}:batchUpdate",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ requests: $json[\"requests\"] }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4128,
+        1104
+      ],
+      "id": "dc374365-a34b-47c1-b5ea-bcb47f402908",
+      "name": "Inject data",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "TL5yPjT41iqbbip2",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "binaryPropertyName": "file",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -15920,
+        2992
+      ],
+      "id": "d0f1d71a-a8c2-48c1-9c3b-1803bc62a561",
+      "name": "Get CSV data"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -16624,
+        2944
+      ],
+      "id": "74560f32-b185-49e1-837c-8688015fd583",
+      "name": "loop // csv"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Вставьте этот код в узел Function в n8n\n\n/**\n * Динамически собирает из любых JSON-объектов единый текст\n * с отступами и списками для последующего AI-анализа.\n */\n\nfunction formatValue(key, value, indent = '') {\n  let text = '';\n  const bullet = indent + '- ';\n  if (Array.isArray(value)) {\n    // Массив: выводим заголовок ключа, затем элементы\n    text += `${indent}${key}:\\n`;\n    value.forEach((el, i) => {\n      if (el !== null && typeof el === 'object') {\n        // Если элемент — объект, рекурсивно его форматируем\n        text += formatValue(`${key} item ${i+1}`, el, indent + '  ');\n      } else {\n        // Примитив\n        text += `${bullet}${el}\\n`;\n      }\n    });\n  } else if (value !== null && typeof value === 'object') {\n    // Объект: выводим заголовок, затем его поля\n    text += `${indent}${key}:\\n`;\n    for (const [k, v] of Object.entries(value)) {\n      text += formatValue(k, v, indent + '  ');\n    }\n  } else {\n    // Примитив\n    text += `${bullet}${key}: ${value}\\n`;\n  }\n  return text;\n}\n\nconst rows = items.map(item => item.json);\n\nlet combinedText = '';\nrows.forEach((row, idx) => {\n  combinedText += `Item ${idx + 1}:\\n`;\n  for (const [key, val] of Object.entries(row)) {\n    combinedText += formatValue(key, val, '  ');\n  }\n  // разделяем блоки пустой строкой\n  if (idx < rows.length - 1) combinedText += '\\n';\n});\n\nreturn [\n  {\n    json: {\n      content: combinedText,\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -15696,
+        2992
+      ],
+      "id": "1342f72c-fd00-41d4-b92d-744ebce1da5c",
+      "name": "Transform CSV file"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = [\n  {\n    \"platformsMentioning\": [\n      \"web\"\n    ],\n    \"mentions\": [\n      {\n        \"uniqueID\": \"1754407622028-1\",\n        \"verdict\": [\n          \"web\",\n        ],\n        \"reasoning\": \"\",\n      },\n    ]\n  }\n];\n\nreturn data.map((item) => ({\n  json: item\n}))"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6272,
+        1984
+      ],
+      "id": "0c30518d-711b-4221-b566-22e33d9ed4dd",
+      "name": "mock // get platforms"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://eleanore-clumsy-thomasena.ngrok-free.dev/progress",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\n  \"uid\": \"{{$json[\"userId\"]}}\",\n  \"executionId\": \"{{$json[\"executionId\"]}}\",\n  \"operation\": {\n    \"step\": \"step_1\",\n    \"status\": \"zalupa\",\n    \"progress\": 20\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -17808,
+        2848
+      ],
+      "id": "2f799167-43f2-48d5-a849-a0d4caab324b",
+      "name": "WaitingPage // Start process"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://eleanore-clumsy-thomasena.ngrok-free.dev/progress",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\n  \"uid\": \"{{$json[\"userId\"]}}\",\n  \"executionId\": \"{{$json[\"executionId\"]}}\",\n  \"operation\": {\n    \"step\": \"step_2\",\n    \"status\": \"start processing {{$json[\"filename\"]}}\",\n    \"progress\": 32\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -15424,
+        2224
+      ],
+      "id": "cf09ada4-377d-46b3-9d3c-40bd6a9bfff1",
+      "name": "WaitingPage // Start processing docx"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://eleanore-clumsy-thomasena.ngrok-free.dev/progress",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\n  \"uid\": \"{{$json[\"userId\"]}}\",\n  \"executionId\": \"{{$json[\"executionId\"]}}\",\n  \"operation\": {\n    \"step\": \"step_2\",\n    \"status\": \"start processing {{$json[\"filename\"]}}\",\n    \"progress\": 34\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -16448,
+        3024
+      ],
+      "id": "95f27d76-283d-4996-b168-ba3195be1f94",
+      "name": "WaitingPage // Start processing csv"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://eleanore-clumsy-thomasena.ngrok-free.dev/progress",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\n  \"uid\": \"{{$json[\"userId\"]}}\",\n  \"executionId\": \"{{$json[\"executionId\"]}}\",\n  \"operation\": {\n    \"step\": \"step_2\",\n    \"status\": \"start processing {{$json[\"filename\"]}}\",\n    \"progress\": 30\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -16320,
+        1360
+      ],
+      "id": "fc48b331-e674-4aa5-a86f-faab05c525df",
+      "name": "WaitingPage // Start processing PDF"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -16384,
+        2720
+      ],
+      "id": "c58ba6f3-d31b-46c5-9935-78ffda421dfd",
+      "name": "MERGE // csv results"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1) Берём массив входных элементов\nconst all = $input.all();\n\n// 2) Фильтруем и мапим в нужный формат\nconst output = all\n  .map(item => item.json)\n  .filter(js => js.executionId && typeof js.content === 'string')\n  .map(js => ({\n    json: {\n      userId: js.userId,\n      executionId: js.executionId,\n      content:     js.content,\n    }\n  }));\n\n// 3) Возвращаем результат\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16160,
+        2720
+      ],
+      "id": "230bcf54-bab6-4b1f-9700-ceac92e5cb37",
+      "name": "Pass CSV results"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://eleanore-clumsy-thomasena.ngrok-free.dev/progress",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\n  \"uid\": \"{{$json[\"userId\"]}}\",\n  \"executionId\": \"{{$json[\"executionId\"]}}\",\n  \"operation\": {\n    \"step\": \"step_3\",\n    \"status\": \"Creating modules...\",\n    \"progress\": 40\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -11136,
+        1904
+      ],
+      "id": "a56b01eb-413e-4c2a-b7c1-3a2a36952ce6",
+      "name": "WaitingPage // Handle chunks"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Получаем все входные элементы\nconst items = $input.all().map(i => i.json);\n\n// 2. Если нет элементов — выходим\nif (items.length === 0) {\n  return [];\n}\n\n// 3. Берём executionId из первого\nconst executionId = items[0].executionId;\nconst userId = items[0].userId;\n\n// 6. Возвращаем один элемент\nreturn [\n  {\n    json: {\n      executionId,\n      userId,\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -11392,
+        2064
+      ],
+      "id": "ad2a4701-0576-4a7f-aa8e-160aef471cd0",
+      "name": "DUMB EVENT NODE // Handle Chunks"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -10128,
+        1984
+      ],
+      "id": "0c91025c-270e-46f0-b962-aae6614386f1",
+      "name": "MERGE // AI modules & executionId"
+    },
+    {
+      "parameters": {
+        "jsCode": "let executionId = '';\nlet userId = '';\n// Ищем первое встречное executionId\nfor (const item of $input.all()) {\n  if (item.json?.executionId && item.json?.userId) {\n    executionId = item.json.executionId;\n    userId = item.json?.userId;\n    break;\n  }\n}\n\n// Возвращаем массив n8n-items\nreturn [\n  {\n    json: {\n      executionId,\n      userId,\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -9648,
+        1760
+      ],
+      "id": "5881f69f-fd4f-4624-9770-fedd21b51078",
+      "name": "DUMB EVENT NODE // Classifying modules"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -6144,
+        1312
+      ],
+      "id": "7685c45f-2055-4b82-a43e-cedc9e8df7c8",
+      "name": "MERGE // exec. ID & modul. enrich."
+    },
+    {
+      "parameters": {
+        "jsCode": "let executionId = '';\nlet userId = '';\n\n// Ищем первое встречное executionId\nfor (const item of $input.all()) {\n  if (item.json?.executionId && item.json?.userId) {\n    executionId = item.json.executionId;\n    userId = item.json?.userId;\n    break;\n  }\n}\n\n// Возвращаем массив n8n-items\nreturn [\n  {\n    json: {\n      executionId,\n      userId,\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5904,
+        1200
+      ],
+      "id": "cd8cbeb5-748b-4a96-bc45-559c1e563e9e",
+      "name": "DUMB EVENT NODE // Enrich modules"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -4928,
+        1024
+      ],
+      "id": "d8d28328-1bde-4a86-82bb-5636ec79198b",
+      "name": "MERGE // exec. ID & Get features"
+    },
+    {
+      "parameters": {
+        "jsCode": "let executionId = '';\nlet userId = '';\n\n// Ищем первое встречное executionId\nfor (const item of $input.all()) {\n  if (item.json?.executionId && item.json?.userId) {\n    executionId = item.json.executionId;\n    userId = item.json?.userId;\n    break;\n  }\n}\n\n// Возвращаем массив n8n-items\nreturn [\n  {\n    json: {\n      executionId,\n      userId,\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4640,
+        848
+      ],
+      "id": "dec09843-1618-4e6e-a5d1-a604f22a48a7",
+      "name": "DUMB EVENT NODE // Get features"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -2880,
+        1120
+      ],
+      "id": "39b6cc98-e5b6-4aed-b207-6dd4b21e7107",
+      "name": "MERGE // Before main flow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Function Node\n// Вход: items = [{ json: {...} }, { json: {...} }, ...]\n// Выход: [{ json: { executionId, features } }]\n\nconst executionObj = items.find(item => item.json.executionId)?.json;\nconst features = items\n  .filter(item => item.json.featureID)\n  .map(item => item.json);\n\nreturn [\n  {\n    json: {\n      executionId: executionObj?.executionId || null,\n      userId: executionObj?.userId || null,\n      features: features\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2688,
+        1120
+      ],
+      "id": "21ee20e7-cd51-4a96-bf8d-8c2be4cd6f76",
+      "name": "Create one object"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -1328,
+        1200
+      ],
+      "id": "ceb54b48-9e1c-4a17-b5c0-eb5466aa6abd",
+      "name": "MERGE // executionID + sub-tasks done"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -5536,
+        1424
+      ],
+      "id": "49e2d0c3-36d6-4ead-85fa-35a384e933d9",
+      "name": "MERGE // Main modules & ENRICHED results"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -5808,
+        1600
+      ],
+      "id": "335d2a18-15dd-4164-af20-ba0a13022602",
+      "name": "loop // ENRICH main modules"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        4576,
+        944
+      ],
+      "id": "e859d428-751d-4f1d-81bb-2ba5d03a656b",
+      "name": "MERGE // Share file"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://eleanore-clumsy-thomasena.ngrok-free.dev/progress",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\n  \"uid\": \"{{$json[\"userId\"]}}\",\n  \"executionId\": \"{{$json[\"executionId\"]}}\",\n  \"operation\": {\n    \"step\": \"step_3\",\n    \"status\": \"this is ur fucking file {{$json.sharedLink}}\",\n    \"progress\": 100\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5056,
+        944
+      ],
+      "id": "64c8ab0b-fe3f-446c-9033-0ca41b9e2fd7",
+      "name": "WaitingPage // Share file"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Находим executionId\nconst executionItem = items.find(item => item.json.executionId);\n\n// Находим spreadsheetId (предполагаем, что node после Google Sheets / Google Drive возвращает его)\nconst spreadsheetItem = items.find(item => item.json.spreadsheetId);\n\n// Собираем рабочую ссылку\nlet sharedLink = null;\nif (spreadsheetItem?.json.spreadsheetId) {\n  const id = spreadsheetItem.json.spreadsheetId;\n  sharedLink = `https://docs.google.com/spreadsheets/d/${id}/edit?usp=sharing`;\n}\n\nreturn [\n  {\n    json: {\n      userId: executionItem?.json.userId || null,\n      executionId: executionItem?.json.executionId || null,\n      sharedLink\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4816,
+        944
+      ],
+      "id": "927271de-2819-4f99-a8d7-137e8ce6eed8",
+      "name": "Share file"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://eleanore-clumsy-thomasena.ngrok-free.dev/progress",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\n  \"uid\": \"{{$json[\"userId\"]}}\",\n  \"executionId\": \"{{$json[\"executionId\"]}}\",\n  \"operation\": {\n    \"step\": \"step_3\",\n    \"status\": \"cClassifying modules...\",\n    \"progress\": 45\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -9360,
+        1584
+      ],
+      "id": "be8499db-cc08-43bc-886c-22c809030755",
+      "name": "WaitingPage // Classifying modules"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://eleanore-clumsy-thomasena.ngrok-free.dev/progress",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\n  \"uid\": \"{{$json[\"userId\"]}}\",\n  \"executionId\": \"{{$json[\"executionId\"]}}\",\n  \"operation\": {\n    \"step\": \"step_3\",\n    \"status\": \"Enriching main modules...\",\n    \"progress\": 65\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5712,
+        1040
+      ],
+      "id": "02424ed3-6d62-41f8-ada6-4957b855310c",
+      "name": "WaitingPage // Enrich main modules"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://eleanore-clumsy-thomasena.ngrok-free.dev/progress",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\n  \"uid\": \"{{$json[\"userId\"]}}\",\n  \"executionId\": \"{{$json[\"executionId\"]}}\",\n  \"operation\": {\n    \"step\": \"step_3\",\n    \"status\": \"Creating features...\",\n    \"progress\": 70\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4384,
+        704
+      ],
+      "id": "6ebfd6a2-ed43-439a-94a5-023520539742",
+      "name": "WaitingPage // Creating features"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://eleanore-clumsy-thomasena.ngrok-free.dev/progress",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\n  \"uid\": \"{{$json[\"userId\"]}}\",\n  \"executionId\": \"{{$json[\"executionId\"]}}\",\n  \"operation\": {\n    \"step\": \"step_3\",\n    \"status\": \"Creating sub-tasks...\",\n    \"progress\": 75\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2384,
+        928
+      ],
+      "id": "1c533d3a-2401-4138-a362-2828c885b966",
+      "name": "WaitingPage // Creating sub-tasks"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://eleanore-clumsy-thomasena.ngrok-free.dev/progress",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\n  \"uid\": \"{{$json[\"userId\"]}}\",\n  \"executionId\": \"{{$json[\"executionId\"]}}\",\n  \"operation\": {\n    \"step\": \"step_3\",\n    \"status\": \"Creating missing questions...\",\n    \"progress\": 90\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -768,
+        800
+      ],
+      "id": "bb7afd73-4159-4705-8fc8-197aac92d01f",
+      "name": "WaitingPage // Creating questions"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = [\n  {\n    \"platformsMentioning\": [\n      \"web\"\n    ],\n    \"mentions\": [\n      {\n        \"uniqueID\": \"1754407622028-1\",\n        \"verdict\": [\n          \"web\"\n        ],\n        \"reasoning\": \"\"\n      }\n    ]\n  }\n];\n\nreturn data.map((item) => ({\n  json: item\n}))"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        1232
+      ],
+      "id": "efb36221-66b7-4f37-8dd5-10da95902b08",
+      "name": "// mock. platforms"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = [\n  {\n    \"kind\": \"drive#file\",\n    \"id\": \"1QHxHbfI9eQ5F1KGRE3RltYVdCr7tA1icCBuwz0Kci4w\",\n    \"name\": \"vsvv // Estimate\",\n    \"mimeType\": \"application/vnd.google-apps.spreadsheet\"\n  }\n];\n\nreturn data.map((item) => ({\n  json: item\n}))"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        1440
+      ],
+      "id": "cadfd436-ace3-4672-b44a-c0d26f90012a",
+      "name": "// mock.file_estimate"
+    },
+    {
+      "parameters": {
+        "operation": "share",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.spreadsheetId }}",
+          "mode": "id"
+        },
+        "permissionsUi": {
+          "permissionsValues": {
+            "role": "writer",
+            "type": "anyone",
+            "allowFileDiscovery": true
+          }
+        },
+        "options": {
+          "transferOwnership": false
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        4336,
+        1104
+      ],
+      "id": "e71f9c23-9505-42f2-8b22-9a25365f9a96",
+      "name": "Share file with client",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "TL5yPjT41iqbbip2",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Надёжный вариант для n8n\n\n// Ищем первый объект с executionId\nconst executionItem = items.find(item => item.json && item.json.executionId);\n\nif (!executionItem) {\n  // Если не нашли, можно вернуть пустой объект или кинуть ошибку\n  return [{ json: { executionId: null } }];\n}\n\n// Возвращаем только executionId\nreturn [\n  { json: { \n    executionId: executionItem.json.executionId,\n    userId: executionItem.json.userId,\n  } }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1040,
+        1104
+      ],
+      "id": "e899d3c3-4cbc-47c2-8d8a-8bbdc3095e57",
+      "name": "Get executionID + userID for questions"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * n8n Code node (JavaScript)\n * Input: mixed items (features object + AI chat.completion responses)\n * Output: single item with { ai: [...], features: [...] }\n */\n\n// ---------- helpers ----------\nfunction extractJsonString(str) {\n  if (typeof str !== 'string') return null;\n  const s = str.trim();\n\n  if (s.startsWith('{') || s.startsWith('[')) return s;\n\n  const fenceRe = /```(?:json)?\\s*([\\s\\S]*?)```/i;\n  const mFence = s.match(fenceRe);\n  if (mFence && mFence[1]) {\n    const inner = mFence[1].trim();\n    if (inner.startsWith('{') || inner.startsWith('[')) return inner;\n  }\n\n  return null;\n}\n\nfunction safeParseJson(maybeJson) {\n  if (typeof maybeJson !== 'string') return null;\n  let s = maybeJson.trim();\n\n  s = s.replace(/[\\u201C\\u201D\\u201E\\u201F\\u2033\\u2036]/g, '\"')\n       .replace(/[\\u2018\\u2019\\u2032\\u2035]/g, \"'\");\n\n  s = s.replace(/,\\s*(\\}|\\])/g, '$1');\n\n  try {\n    return JSON.parse(s);\n  } catch {\n    return null;\n  }\n}\n\nfunction normalizeParsed(parsed) {\n  if (Array.isArray(parsed)) return parsed;\n  if (parsed && typeof parsed === 'object') {\n    const candidateKeys = ['data', 'items', 'result', 'payload', 'responses', 'sub_features'];\n    for (const k of candidateKeys) {\n      if (Array.isArray(parsed[k])) return parsed[k];\n    }\n  }\n  return [parsed];\n}\n\nfunction isAiChatCompletion(obj) {\n  return obj\n    && typeof obj === 'object'\n    && obj.object === 'chat.completion'\n    && Array.isArray(obj.choices)\n    && obj.choices.length > 0\n    && obj.choices[0]\n    && obj.choices[0].message\n    && typeof obj.choices[0].message.content !== 'undefined';\n}\n\n// ---------- collect ----------\nconst featuresArr = [];\nconst aiArr = [];\n\nfor (const item of items) {\n  const data = item.json ?? item;\n\n  // collect features\n  if (data && Array.isArray(data.features)) {\n    featuresArr.push(...data.features);\n    continue;\n  }\n\n  // collect AI responses\n  if (isAiChatCompletion(data)) {\n    const content = data.choices[0].message.content;\n    let parsed = null;\n\n    if (typeof content === 'string') {\n      const jsonStr = extractJsonString(content);\n      if (jsonStr) parsed = safeParseJson(jsonStr);\n    } else if (content && typeof content === 'object') {\n      parsed = content;\n    }\n\n    if (!parsed) continue;\n\n    const normalized = normalizeParsed(parsed);\n    aiArr.push(...normalized);\n  }\n}\n\n// ---------- output ----------\nreturn [\n  {\n    json: {\n      ai: aiArr,\n      features: featuresArr,\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1040,
+        1280
+      ],
+      "id": "6a97a4e6-4b18-4170-8987-7833c62613ff",
+      "name": "Parse sub-features / sub-tasks"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -448,
+        1120
+      ],
+      "id": "dee41f6a-f2f9-4b7c-8fba-d741ea8e14ff",
+      "name": "MERGE // executionID & sub-features"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = items[1].json;\n\nconst ai = data.ai || [];\nconst features = data.features || [];\n\nconst enrichedFeatures = features.map(feature => {\n  const aiMatch = ai.find(a => a.global_feature_id === feature.featureID);\n\n  let subFeaturesSummary = [];\n\n  if (aiMatch && Array.isArray(aiMatch.sub_features)) {\n    subFeaturesSummary = aiMatch.sub_features.map(sub => ({\n      id: sub.subFeatureID,\n      name: sub.subFeatureName,\n      description: sub.description,\n      subtasks: sub.subtasks || [] // добавляем сабтаски, если они есть\n    }));\n  }\n\n  return {\n    ...feature,\n    subFeaturesSummary,\n  };\n});\n\nreturn enrichedFeatures.map(f => ({ json: f }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        1120
+      ],
+      "id": "ad6a6a9e-d0ec-416f-be4f-7ef01a8e6c3c",
+      "name": "Prepare data for questions"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        320,
+        960
+      ],
+      "id": "2cd185b3-ca8a-4525-84d7-4d325ede64c9",
+      "name": "MERGE core data"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Function node (ONE output)\n// Returns: [{ json: { subFeatureId, name, description, subtasks[], questions[] } }, ...]\n\nfunction normalizeId(v) {\n  return String(v ?? '').trim().toUpperCase();\n}\n\nfunction safeJsonParse(str) {\n  if (typeof str !== 'string') return null;\n  try { return JSON.parse(str); } catch {}\n  const first = str.indexOf('[');\n  const last = str.lastIndexOf(']');\n  if (first !== -1 && last !== -1 && last > first) {\n    try { return JSON.parse(str.slice(first, last + 1)); } catch {}\n  }\n  return null;\n}\n\n// Собираем все входные payload'ы\nconst all = [];\nfor (const it of items) {\n  const payload = (it.json && it.json.data !== undefined) ? it.json.data : it.json;\n  if (Array.isArray(payload)) all.push(...payload);\n  else all.push(payload);\n}\n\n// 1) Достаём ответы ИИ в единый список { subFeatureId, questions[] }\nconst aiPairs = [];\nfor (const obj of all) {\n  // Вариант: готовый массив [{ subFeatureId, questions }]\n  if (Array.isArray(obj) && obj.length && obj[0]?.subFeatureId && obj[0]?.questions) {\n    aiPairs.push(...obj);\n    continue;\n  }\n  // Вариант: объект OpenAI-like chat.completion\n  if (obj?.object === 'chat.completion' && Array.isArray(obj?.choices) && obj.choices[0]?.message?.content) {\n    const parsed = safeJsonParse(obj.choices[0].message.content);\n    if (Array.isArray(parsed)) {\n      aiPairs.push(...parsed);\n      continue;\n    }\n  }\n  // Вариант: единичный объект\n  if (obj?.subFeatureId && obj?.questions) {\n    aiPairs.push(obj);\n    continue;\n  }\n  // Вариант: строка с JSON-массивом\n  if (typeof obj === 'string') {\n    const parsed = safeJsonParse(obj);\n    if (Array.isArray(parsed)) {\n      aiPairs.push(...parsed);\n      continue;\n    }\n  }\n}\n\n// 2) Карта AI-вопросов по саб-фичам\nconst aiMap = new Map(); // key: normalized id, value: string[]\nfor (const pair of aiPairs) {\n  const key = normalizeId(pair.subFeatureId);\n  if (!key) continue;\n  const qs = Array.isArray(pair.questions)\n    ? pair.questions.filter(q => typeof q === 'string' && q.trim())\n    : [];\n  if (!aiMap.has(key)) aiMap.set(key, []);\n  aiMap.get(key).push(...qs);\n}\n\n// 3) Собираем все саб-фичи\nconst subfeatures = [];\nfor (const obj of all) {\n  const sfs = obj?.subFeaturesSummary;\n  if (Array.isArray(sfs)) subfeatures.push(...sfs);\n}\n\n// 4) Мердж и возврат\nconst out = [];\n\nfor (const sf of subfeatures) {\n  const rawId = sf.id || sf.subFeatureId || '';\n  const key = normalizeId(rawId);\n  const merged = {\n    subFeatureId: rawId || null,\n    name: sf.name ?? null,\n    description: sf.description ?? null,\n    subtasks: Array.isArray(sf.subtasks) ? sf.subtasks : [],\n    questions: aiMap.get(key) ?? [],\n  };\n  // ВАЖНО: Всегда возвращаем как объект внутри json\n  out.push({ json: merged });\n}\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        528,
+        960
+      ],
+      "id": "e7ff17c8-59e6-47d2-97dc-29d524dbce5f",
+      "name": "Parse core data"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        816,
+        800
+      ],
+      "id": "b4878772-00de-4172-916e-4a0a8fc3ea97",
+      "name": "MERGE // core data + execID + userID"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ONE output\n// Возвращает первый объект, у которого есть executionId и userId.\n\nfunction pickMeta(arr) {\n  for (const o of arr) {\n    if (o && typeof o === 'object' && o.executionId && o.userId) {\n      return { executionId: String(o.executionId), userId: String(o.userId) };\n    }\n  }\n  return null;\n}\n\n// Собираем плоский список объектов из входа n8n\nconst flat = [];\nif (items.length === 1 && Array.isArray(items[0].json)) {\n  // случай: весь массив лежит в json первого item\n  for (const o of items[0].json) flat.push(o);\n} else {\n  for (const it of items) flat.push(it.json);\n}\n\nconst meta = pickMeta(flat);\nif (!meta) {\n  // ничего не нашли — вернуть пустой массив\n  return [];\n}\n\n// строго { json: { ... } }\nreturn [{ json: meta }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        592
+      ],
+      "id": "26e1261a-60a3-4633-9b83-06f02e0f3d3e",
+      "name": "Get executionId + userId"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ONE output\n// Возвращает один объект: { json: { data: [ ...сабфичи... ] } }\n\nfunction isMeta(o) {\n  return o && typeof o === 'object' && o.executionId && o.userId && Object.keys(o).length <= 2;\n}\n\n// Собираем плоский список объектов из входа n8n\nconst flat = [];\nif (items.length === 1 && Array.isArray(items[0].json)) {\n  for (const o of items[0].json) flat.push(o);\n} else {\n  for (const it of items) flat.push(it.json);\n}\n\n// Берём всё, что НЕ мета-объект (т.е. сабфичи и прочее)\nconst rest = flat.filter(o => !isMeta(o) && o && typeof o === 'object');\n\n// Если хочешь ужесточить до \"только сабфичи\", используй вместо строки выше:\n// const rest = flat.filter(o => o && typeof o === 'object' && o.subFeatureId && !isMeta(o));\n\n// Возвращаем одним item'ом\nreturn [{\n  json: {\n    data: rest\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1296,
+        720
+      ],
+      "id": "990ce4d2-a1b2-4b90-9922-7cb3169927ca",
+      "name": "Get core data"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://eleanore-clumsy-thomasena.ngrok-free.dev/progress",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\n  \"uid\": \"{{$json[\"userId\"]}}\",\n  \"executionId\": \"{{$json[\"executionId\"]}}\",\n  \"operation\": {\n    \"step\": \"step_3\",\n    \"status\": \"Injecting data\",\n    \"progress\": 90\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1296,
+        400
+      ],
+      "id": "97491538-39ac-41b2-a99b-d155a9c8f735",
+      "name": "WaitingPage // Injecting datasets"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = items[0].json.body || {};\nconst binary = items[0].binary || {};\n\nconst descArr = Array.isArray(body.descriptions) ? body.descriptions : [body.descriptions];\nconst typeArr = Array.isArray(body.types) ? body.types : [body.types];\n\nconst files = [];\n\nObject.entries(binary).forEach(([key, fileData], index) => {\n  files.push({\n    filename: fileData.fileName,\n    description: descArr[index] || '',\n    type: typeArr[index] || '',\n    binaryPropertyName: key,\n  });\n});\n\nreturn [\n  {\n    json: {\n      userId: body.userId,\n      executionId: body.executionId,\n      project_name: body.project_name || '',\n      notes_to_ai: body.notes_to_ai || '',\n      files,\n    },\n    binary,\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -18048,
+        3072
+      ],
+      "id": "7a83e807-11a1-44de-8c69-93d38ea6c1ef",
+      "name": "Get data"
+    },
+    {
+      "parameters": {
+        "jsCode": "const new_items = [];\nfor (let i = 0; i < items.length; i++) {\n  const item = items[i];\n  \n  // Get the JSON from the \"Get modules from chunks_xAI\" node of the previous item, if it exists\n  let previous_item = null;\n  let previous_parsed = null;  // Всё распарсенное { modules: [...] } или null\n  let unfinished_previous = null;  // Крайний unfinished модуль или null\n  \n  if ($runIndex > 0) {\n    previous_item = $('Get modules from chunks_xAI').first(0, $runIndex - 1).json;\n    \n    // Parse the actual modules from the AI response structure\n    if (previous_item && Array.isArray(previous_item.choices) && previous_item.choices.length > 0) {\n      let content_str = previous_item.choices[0].message?.content;\n      if (content_str) {\n        // Safe parsing with fallbacks\n        try {\n          let content = String(content_str).trim();  // Step 1: To string + trim\n          \n          // Step 2: Remove markdown wrapper if present\n          const markdownRegex = new RegExp('```json\\\\s*([\\\\s\\\\S]+?)\\\\s*```');\n          if (content.startsWith('```json')) {\n            const matches = content.match(markdownRegex);\n            if (matches && matches[1]) {\n              content = matches[1].trim();\n            }\n          }\n          \n          // Step 3: JSON.parse with double-serialization check\n          let parsed = JSON.parse(content);\n          if (typeof parsed === 'string') {\n            parsed = JSON.parse(parsed);\n          }\n          \n          // Validate: Must be object with modules array\n          if (parsed && Array.isArray(parsed.modules)) {\n            previous_parsed = parsed;\n          } else {\n            throw new Error('Parsed but no valid modules array');\n          }\n        } catch (err) {\n          console.error('🛑 Failed full JSON.parse:', err.message);\n          \n          // Step 4: Fallback regex extract (improved: more specific to your module structure)\n          const modules = [];\n          // Regex tuned: Matches { \"id\": ..., \"title\": ..., \"content\": ..., \"completed\": true|false }\n          const objRegex = new RegExp('\\\\{\\\\s*\"id\"\\\\s*:\\\\s*(\\\\d+|\".*?\")\\\\s*,\\\\s*\"title\"\\\\s*:\\\\s*\".*?\"\\\\s*,\\\\s*\"content\"\\\\s*:\\\\s*\".*?\"\\\\s*,\\\\s*\"completed\"\\\\s*:\\\\s*(true|false)\\\\s*\\\\}', 'g');\n          const objectMatches = content_str.match(objRegex);\n          if (objectMatches) {\n            objectMatches.forEach(objStr => {\n              try {\n                const obj = JSON.parse(objStr);\n                modules.push(obj);\n              } catch (e2) {\n                console.error(\"❌ Partial parse failed:\", objStr, e2.message);\n              }\n            });\n          }\n          if (modules.length > 0) {\n            previous_parsed = { modules };\n          }\n        }\n      }\n    }\n  }\n  \n  // Extract last unfinished module (if any)\n  if (previous_parsed && Array.isArray(previous_parsed.modules) && previous_parsed.modules.length > 0) {\n    // Start from end to find the last unfinished\n    for (let j = previous_parsed.modules.length - 1; j >= 0; j--) {\n      const mod = previous_parsed.modules[j];\n      if (mod.completed === false) {\n        unfinished_previous = {\n          id: mod.id,\n          title: mod.title,\n          content: mod.content\n        };\n        break;\n      }\n    }\n  }\n  \n  // Handle isLastChunk: If true, force no unfinished (assume completion) or add flag for prompt\n  const isLastChunk = item.json.isLastChunk || false;  // From previous node\n  let forceComplete = isLastChunk;  // Flag to prompt: \"Заверши все модули\"\n  if (isLastChunk && unfinished_previous) {\n    // Optional: Log warning if unfinished on last chunk\n    console.warn(`Unfinished module on last chunk: ${unfinished_previous.id}`);\n  }\n  \n  // Create new item with added meta\n  const newItem = {\n    unfinished_previous,  // Last unfinished or null\n    forceComplete,  // New: For prompt to force completion on last chunk\n    item: item.json,  // Original chunk data\n  };\n  \n  new_items.push(newItem);\n}\n\nreturn new_items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -10880,
+        2384
+      ],
+      "id": "4b9febb6-0c52-4a98-b438-ce9fe5726fba",
+      "name": "Preprocess chunks"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "grok-3-fast",
+          "mode": "list",
+          "cachedResultName": "GROK-3-FAST"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a document chunker: Break text into small, informative, standalone modules. Each module is a logical unit (e.g., paragraph, section, idea) with title summarizing content.\n\n{{ $json.item.isFirstChunk ? \"This is the FIRST chunk of the document (type: \" + $json.item.type + \"; explanation: “\" + $json.item.explanation + \"”). Start modules from ID 1.\" : \"This is a continuation of the same document (type: \" + $json.item.type + \"). You processed previous parts. Begin with overlap from prior chunk — avoid duplicates, continue unfinished modules.\" }}\n\n{{ $json.unfinished_previous ? \"Start by continuing the last unfinished module: ID: \" + $json.unfinished_previous.id + \", Title: \" + $json.unfinished_previous.title + \", Content (append from here): \" + $json.unfinished_previous.content + \". Merge logically with chunk start if overlap matches, then set completed: true if full.\" : \"\" }}\n\n{{ $json.forceComplete ? \"This is the LAST chunk — ensure ALL modules are completed (completed: true), no unfinished.\" : \"\" }}\n\nGuidelines:\n- Modules: Break semantically (complete thoughts, not mid-sentence). Size: 200-500 chars ideal.\n- ID: Unique sequential numbers; continue from previous (last ID +1 if known).\n- Title: Short, descriptive summary.\n- Content: Exact text from chunk, no additions.\n- Completed: true if standalone/full; false ONLY if idea cuts off (needs next chunk).\n- No duplicates: If text repeats from overlap/unfinished, merge don't repeat.\n- Keywords (for visual matching): Provide a keywords array of 3–10 normalized tokens/phrases derived only from the module’s Content (plus obvious canonical forms of terms explicitly present).Normalize: lowercase, singular where reasonable, remove stop-words/punctuation; keep only informative terms.\n\nFew-shot example:\nChunk: \"Intro to AI. AI is intelligence by machines. History: Started in 1950s.\"\nOutput: {\"modules\": [{\"id\":1,\"title\":\"Introduction to AI\",\"content\":\"Intro to AI. AI is intelligence by machines.\",\"completed\":true,\"keywords\": [\"ai\", \"artificial intelligence\", \"intelligence\", \"machines\"]},{\"id\":2,\"title\":\"AI History\",\"content\":\"History: Started in 1950s.\",\"completed\":false,\"keywords\":[\"history\", \"1950s\"]}]}\n\nReturn PURE JSON only, no comments, no markdown, no extra text:\n{\"modules\": [{\"id\": <number>,\"title\": \"<string>\",\"content\": \"<string>\",\"completed\": <boolean>,\"keywords\":\"array<string>\"}, ...]}\n\n=== Chunk №{{ $json.item.chunkIndex }} ===\n{{ $json.item.chunkText }}"
+            }
+          ]
+        },
+        "simplify": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -10640,
+        2384
+      ],
+      "id": "9fa0ae56-a84a-4b04-bddb-5ca237c7e84f",
+      "name": "Get modules from chunks_xAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "8D5pkGIHJTDfSWJY",
+          "name": "Grok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -11152,
+        2272
+      ],
+      "id": "4330f474-c81f-49c5-b52d-134ec40f8a3d",
+      "name": "LOOP // Get modules"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9d4f9f5d-2265-4ab0-b5a7-dadb9220350c",
+              "leftValue": "={{ $if(\n  $(\"Combine visual content + explanation\").isExecuted,\n  $('Parse & get modules').all(),\n  null\n) }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "array",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -9248,
+        2032
+      ],
+      "id": "5f6e85b3-1e8d-4e87-bc1b-a12bfedb3e18",
+      "name": "Check if user added images"
+    },
+    {
+      "parameters": {
+        "jsCode": "const visual_info = $('Combine visual content + explanation').all().map(item => item.json);\n\nreturn visual_info"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8912,
+        1952
+      ],
+      "id": "55a13e7f-80ca-430e-bd83-9f764c4bf756",
+      "name": "Get array of images"
+    },
+    {
+      "parameters": {
+        "batchSize": "={{ 1 }}",
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -8752,
+        2272
+      ],
+      "id": "ebec0350-04ac-4ce4-94e0-7e2a8b124307",
+      "name": "LOOP // Get images"
+    },
+    {
+      "parameters": {
+        "jsCode": "const lists_of_keywords =  $('Parse & get modules').all().map(item => {\n  const j = item.json || {};\n  return {\n      uniqueId: j.uniqueID ?? j.uniqueId ?? j.id,\n      keywords: Array.isArray(j.keywords) ? j.keywords : []\n  };\n});\n\nreturn {\n  lists_of_keywords,\n  $input\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8512,
+        2288
+      ],
+      "id": "c044fc96-f931-4e82-b875-25418e1036c6",
+      "name": "Get array of keywords and uniqueId"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "grok-3-fast",
+          "mode": "list",
+          "cachedResultName": "GROK-3-FAST"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an analytical model evaluator. \nYour task is to measure how semantically related each keyword set is to the provided TEXT content. \nReturn one concise JSON object following the exact structure below.\n\nTEXT - {{ $json.$input.item.json.content }}\nEXPLANATION_FROM_USER - {{ $json.$input.item.json.explanation }}\nKEYWORDS - {{ JSON.stringify($json.lists_of_keywords) }}\n\n**Instructions:**\n- Analyze the TEXT and EXPLANATION_FROM_USER carefully and identify its main concepts, entities, and topics.\n- For each element in the provided `keywords_list`, compare its keywords to the semantic meaning of the TEXT.\n- Use both direct word overlap and contextual similarity (concept-level).\n- For each comparison, output a floating-point number `percentage` between 0 and 1:\n  - 1.0 → the keywords perfectly describe or strongly align with the TEXT meaning.\n  - 0.0 → the keywords are unrelated to the TEXT.\n  - Typical related cases will be 0.6–0.9; weak but partial relevance around 0.3–0.5.\n- Include every `unique_id` from the input list — even if relevance is 0.\n\n**Output format (JSON only):**\n```json\n{\n  \"text\": \"<the same TEXT provided below>\",\n  \"connected_modules\": [\n    {\n      \"unique_id\": \"<id from keywords_list>\",\n      \"percentage\": <float between 0 and 1>\n    }\n  ]\n}\n"
+            }
+          ]
+        },
+        "simplify": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -8304,
+        2288
+      ],
+      "id": "976bf99e-d271-471b-bb7e-1e010581cf2c",
+      "name": "How semantically related_xAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "8D5pkGIHJTDfSWJY",
+          "name": "Grok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const flatArr = $input.all().map((item) => {\n  const content = JSON.parse(item.json.choices[0].message.content);\n  return {\n    text: content.text,\n    connected_modules: content.connected_modules.filter(\n      (m) => m.percentage >= 0.5 && m.percentage < 0.9\n    ),\n  };\n});\n\n// создаём объект, где ключ — unique_id, значение — массив текстов\nconst modulesMap = {};\n\nfor (const item of flatArr) {\n  for (const mod of item.connected_modules) {\n    const id = mod.unique_id;\n\n    if (!modulesMap[id]) {\n      modulesMap[id] = [];\n    }\n\n    // добавляем текст, если его ещё нет (чтобы избежать дублей)\n    if (!modulesMap[id].includes(item.text)) {\n      modulesMap[id].push(item.text);\n    }\n  }\n}\n\nreturn [{ json: modulesMap }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8384,
+        2128
+      ],
+      "id": "c9b04891-e76e-43f3-a0e5-c2b69fff186e",
+      "name": "Parse AI output to flat Array"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $('Parse & get modules').all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8176,
+        2080
+      ],
+      "id": "f3cde557-d7e2-42fe-9360-0a2ea38a5805",
+      "name": "Get all modules"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item;\nconst uniqueID = item.json.uniqueID;\nconst visualData = $('Parse AI output to flat Array').all();\n\nif (visualData[0].json[uniqueID]) {\n  return {\n    output: [\n      item,\n      visualData[0].json[uniqueID]\n    ]\n  };\n}\n\nreturn {\n    output: [\n      item,\n    ]\n  };\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7568,
+        2208
+      ],
+      "id": "d3e81db0-b3f5-4514-a9a7-47c994aba5cb",
+      "name": "Find relative module and images descriptions",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -7872,
+        2192
+      ],
+      "id": "30471ae7-a6f8-4181-8969-d3ee1985d9cb",
+      "name": "LOOP // Get modules1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3b42cf1b-3372-4d95-92b2-9ee583160555",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "array",
+                "operation": "lengthGt",
+                "rightType": "number"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -7280,
+        2208
+      ],
+      "id": "9988a7a2-8f5d-4a2b-bbb5-fe899bd308fb",
+      "name": "Check if this module has relative images"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "grok-3-fast",
+          "mode": "list",
+          "cachedResultName": "GROK-3-FAST"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an expert technical editor.  \nYour task is to enhance the \"content\" field of a provided project object using additional context texts.  \n\nInstructions:\n1. You will receive two separate inputs:\n   - The base project object (the item to enhance).\n   - An array of related context texts (descriptions of workflows, features, or functionality).\n2. Keep all original fields from the project object unchanged — except:\n   - Remove the field \"keywords\" if it exists.\n   - Expand and improve the \"content\" field using relevant information from the provided texts.\n3. When improving \"content\":\n   - Preserve the tone, formatting (e.g., Markdown), and overall meaning of the original.\n   - Merge useful details from the context texts smoothly and logically.\n   - Avoid repeating information or making the text unnecessarily long.\n   - Integrate the context so that it feels like part of the same document.\n4. Return a single valid JSON object, formatted exactly as the input but:\n   - Without the \"keywords\" field.\n   - With the improved \"content\" field.\n5. Do NOT add explanations, code blocks, or any text outside the JSON object.\n\n---\n\nITEM - {{ JSON.stringify($json.output[0].json) }}\nCONTEXT_TEXTS - {{ $json.output[1] }}\n\n### Example\n\n**Input Object:**\n```json\n{\n  \"id\": 1,\n  \"title\": \"Project Overview: Instagram Cat Video Bot\",\n  \"content\": \"**AI Bot Specification: Instagram Cat Video Poster** **Project Title:** Automated Instagram Bot for Posting Funny Cat Videos **Objective:** Create an AI-powered bot that automatically finds, curates, and posts funny cat videos to an Instagram account on a regular schedule.\",\n  \"completed\": true,\n  \"keywords\": [\n    \"ai bot\",\n    \"instagram\",\n    \"cat videos\",\n    \"funny videos\",\n    \"automation\",\n    \"posting\",\n    \"schedule\"\n  ],\n  \"uniqueID\": \"1760563829496-0\"\n}\n\nExpected Output:\n{\n  \"id\": 1,\n  \"title\": \"Project Overview: Instagram Cat Video Bot\",\n  \"content\": \"**AI Bot Specification: Instagram Cat Video Poster** **Project Title:** Automated Instagram Bot for Posting Funny Cat Videos **Objective:** Develop an AI-powered system that collects videos from YouTube, Facebook, and Instagram, automatically generates optimized titles, descriptions, and tags, and uploads them to Instagram. The bot also sends notifications and statistics to a Telegram channel, enhancing automation, consistency, and engagement in social media content management.\",\n  \"completed\": true,\n  \"uniqueID\": \"1760563829496-0\"\n}"
+            }
+          ]
+        },
+        "simplify": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -7024,
+        2208
+      ],
+      "id": "eadc053f-8581-4bcb-9025-45c1dcdccfc0",
+      "name": "Enrich the module by images description_xAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "8D5pkGIHJTDfSWJY",
+          "name": "Grok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json.output[0].json;\n\nconst { keywords, ...rest } = item;\n\nreturn rest;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7264,
+        2528
+      ],
+      "id": "0955ccf1-abd6-448c-a6d8-3da59ca9fcf4",
+      "name": "Parse module"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\n\nconst content = data.choices?.[0]?.message?.content;\n\nlet parsed;\ntry {\n  parsed = JSON.parse(content);\n} catch (e) {\n  throw new Error('Error parse content field: ' + e.message);\n}\n\nreturn parsed;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6672,
+        2208
+      ],
+      "id": "637152ce-b936-471d-b091-89ab2a325693",
+      "name": "Parse ai module after enriched"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -9568,
+        2032
+      ],
+      "id": "a2cd0064-8095-43de-9386-b364d899d8c8",
+      "name": "Merge"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handle files formats": {
+      "main": [
+        [
+          {
+            "node": "Get and filter ONLY files",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extract project name / notes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get and filter ONLY files": {
+      "main": [
+        [
+          {
+            "node": "Route files via type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route files via type": {
+      "main": [
+        [
+          {
+            "node": "LOOP over PDF docs",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MERGE // PDF explanation & content",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Initial docx handling",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "loop // csv",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MERGE // csv results",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Initial PNG handling",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Initial PNG handling",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initial docx handling": {
+      "main": [
+        [
+          {
+            "node": "Get ASPOSE token",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MERGE docx files & ASPOSE token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get ASPOSE token": {
+      "main": [
+        [
+          {
+            "node": "MERGE docx files & ASPOSE token",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "MERGE docx files & ASPOSE token": {
+      "main": [
+        [
+          {
+            "node": "Accept docx files & ASPOSE token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Accept docx files & ASPOSE token": {
+      "main": [
+        [
+          {
+            "node": "LOOP through DOCX files",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MERGE // docx description + content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LOOP through DOCX files": {
+      "main": [
+        [
+          {
+            "node": "Accept parsed DOCX content",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Convert docx into MD",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WaitingPage // Start processing docx",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert docx into MD": {
+      "main": [
+        [
+          {
+            "node": "LOOP through DOCX files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LOOP over PDF docs": {
+      "main": [
+        [
+          {
+            "node": "MERGE // PDF explanation & content",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Get PDF content",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WaitingPage // Start processing PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get PDF content": {
+      "main": [
+        [
+          {
+            "node": "LOOP over PDF docs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE // PDF explanation & content": {
+      "main": [
+        [
+          {
+            "node": "Combine PDF content + explanation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initial PNG handling": {
+      "main": [
+        [
+          {
+            "node": "MERGE // visualisation description + content",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "LOOP // recognize visual",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LOOP // recognize visual": {
+      "main": [
+        [
+          {
+            "node": "MERGE // visualisation description + content",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Recognize Visual // xAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recognize Visual // xAI": {
+      "main": [
+        [
+          {
+            "node": "LOOP // recognize visual",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Accept parsed DOCX content": {
+      "main": [
+        [
+          {
+            "node": "MERGE // docx description + content",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "MERGE // docx description + content": {
+      "main": [
+        [
+          {
+            "node": "Combine docx content + explanation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE // visualisation description + content": {
+      "main": [
+        [
+          {
+            "node": "Combine visual content + explanation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine docx content + explanation": {
+      "main": [
+        [
+          {
+            "node": "MERGE ALL RESULTS",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Combine PDF content + explanation": {
+      "main": [
+        [
+          {
+            "node": "MERGE ALL RESULTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine visual content + explanation": {
+      "main": [
+        [
+          {
+            "node": "MERGE ALL RESULTS",
+            "type": "main",
+            "index": 3
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "LOOP. CUT + GET chunks for each document": {
+      "main": [
+        [
+          {
+            "node": "DUMB EVENT NODE // Handle Chunks",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Handle chunks",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": " CUT + GET chunks for each document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    " CUT + GET chunks for each document": {
+      "main": [
+        [
+          {
+            "node": "LOOP. CUT + GET chunks for each document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handle chunks": {
+      "main": [
+        [
+          {
+            "node": "LOOP // Get modules",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE ALL RESULTS": {
+      "main": [
+        [
+          {
+            "node": "LOOP. CUT + GET chunks for each document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse & get modules": {
+      "main": [
+        [
+          {
+            "node": "mock // get platforms",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify modules_xAI": {
+      "main": [
+        [
+          {
+            "node": "loop // classify modules",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "loop // classify modules": {
+      "main": [
+        [
+          {
+            "node": "MERGE // Modules & classifications",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Classify modules_xAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE // Modules & classifications": {
+      "main": [
+        [
+          {
+            "node": "Combine modules & classifications",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine modules & classifications": {
+      "main": [
+        [
+          {
+            "node": "Create clusters for enrichment",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MERGE // exec. ID & modul. enrich.",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Enrich main modules_xAI": {
+      "main": [
+        [
+          {
+            "node": "loop // ENRICH main modules",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create clusters for enrichment": {
+      "main": [
+        [
+          {
+            "node": "loop // ENRICH main modules",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MERGE // Main modules & ENRICHED results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrich main modules": {
+      "main": [
+        [
+          {
+            "node": "Create batches of enriched modules",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create batches of enriched modules": {
+      "main": [
+        [
+          {
+            "node": "loop // Get features",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MERGE // Features & Enriched modules",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MERGE // exec. ID & Get features",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "loop // Get features": {
+      "main": [
+        [
+          {
+            "node": "MERGE // Features & Enriched modules",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Get features // preprocess",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get features // preprocess": {
+      "main": [
+        [
+          {
+            "node": "Get features_xAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get features_xAI": {
+      "main": [
+        [
+          {
+            "node": "loop // Get features",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE // Features & Enriched modules": {
+      "main": [
+        [
+          {
+            "node": "Connect modules to features",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create modules batches // 1": {
+      "main": [
+        [
+          {
+            "node": "loop // classify modules",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MERGE // Modules & classifications",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Connect modules to features": {
+      "main": [
+        [
+          {
+            "node": "MERGE // Potential platforms & Features",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE // Potential platforms & Features": {
+      "main": [
+        [
+          {
+            "node": "MERGE // Before main flow",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Create features batches with platforms": {
+      "main": [
+        [
+          {
+            "node": "loop // Get project features & sub-tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "loop // Get project features & sub-tasks": {
+      "main": [
+        [
+          {
+            "node": "MERGE // executionID + sub-tasks done",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Get projects features & subtasks_xAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get projects features & subtasks_xAI": {
+      "main": [
+        [
+          {
+            "node": "loop // Get project features & sub-tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "loop // Get questions": {
+      "main": [
+        [
+          {
+            "node": "MERGE core data",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Get questions_xAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get questions_xAI": {
+      "main": [
+        [
+          {
+            "node": "loop // Get questions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract project name / notes": {
+      "main": [
+        [
+          {
+            "node": "Create project folder",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MERGE Google.cloud metadata",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Create estimate file": {
+      "main": [
+        [
+          {
+            "node": "PREPARE data for publishing",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Create project folder": {
+      "main": [
+        [
+          {
+            "node": "MERGE Google.cloud metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE Google.cloud metadata": {
+      "main": [
+        [
+          {
+            "node": "Convert metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert metadata": {
+      "main": [
+        [
+          {
+            "node": "Create estimate file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PREPARE data for publishing": {
+      "main": [
+        [
+          {
+            "node": "Accept data for publishing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Accept data for publishing": {
+      "main": [
+        [
+          {
+            "node": "MERGE // Publishing data & Estimate metadata",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get estimate file metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get estimate file metadata": {
+      "main": [
+        [
+          {
+            "node": "MERGE // Publishing data & Estimate metadata",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "MERGE // Publishing data & Estimate metadata": {
+      "main": [
+        [
+          {
+            "node": "Combine metadata + publishing data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine metadata + publishing data": {
+      "main": [
+        [
+          {
+            "node": "Prepare data for injecting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare data for injecting": {
+      "main": [
+        [
+          {
+            "node": "Inject data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inject data": {
+      "main": [
+        [
+          {
+            "node": "Share file with client",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MERGE // Share file",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get CSV data": {
+      "main": [
+        [
+          {
+            "node": "Transform CSV file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "loop // csv": {
+      "main": [
+        [
+          {
+            "node": "MERGE // csv results",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Get CSV data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WaitingPage // Start processing csv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transform CSV file": {
+      "main": [
+        [
+          {
+            "node": "loop // csv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mock // get platforms": {
+      "main": [
+        [
+          {
+            "node": "MERGE // Potential platforms & Features",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "PREPARE data for publishing",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "MERGE // csv results": {
+      "main": [
+        [
+          {
+            "node": "Pass CSV results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pass CSV results": {
+      "main": [
+        [
+          {
+            "node": "MERGE ALL RESULTS",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "DUMB EVENT NODE // Handle Chunks": {
+      "main": [
+        [
+          {
+            "node": "WaitingPage // Handle chunks",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MERGE // AI modules & executionId",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE // AI modules & executionId": {
+      "main": [
+        [
+          {
+            "node": "DUMB EVENT NODE // Classifying modules",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Parse & get modules",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DUMB EVENT NODE // Classifying modules": {
+      "main": [
+        [
+          {
+            "node": "MERGE // exec. ID & modul. enrich.",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WaitingPage // Classifying modules",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE // exec. ID & modul. enrich.": {
+      "main": [
+        [
+          {
+            "node": "DUMB EVENT NODE // Enrich modules",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DUMB EVENT NODE // Enrich modules": {
+      "main": [
+        [
+          {
+            "node": "MERGE // exec. ID & Get features",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WaitingPage // Enrich main modules",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE // exec. ID & Get features": {
+      "main": [
+        [
+          {
+            "node": "DUMB EVENT NODE // Get features",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DUMB EVENT NODE // Get features": {
+      "main": [
+        [
+          {
+            "node": "MERGE // Before main flow",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WaitingPage // Creating features",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE // Before main flow": {
+      "main": [
+        [
+          {
+            "node": "Create one object",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create one object": {
+      "main": [
+        [
+          {
+            "node": "Create features batches with platforms",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MERGE // executionID + sub-tasks done",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WaitingPage // Creating sub-tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE // executionID + sub-tasks done": {
+      "main": [
+        [
+          {
+            "node": "Parse sub-features / sub-tasks",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get executionID + userID for questions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE // Main modules & ENRICHED results": {
+      "main": [
+        [
+          {
+            "node": "Enrich main modules",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "loop // ENRICH main modules": {
+      "main": [
+        [
+          {
+            "node": "MERGE // Main modules & ENRICHED results",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Enrich main modules_xAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE // Share file": {
+      "main": [
+        [
+          {
+            "node": "Share file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Share file": {
+      "main": [
+        [
+          {
+            "node": "WaitingPage // Share file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Share file with client": {
+      "main": [
+        [
+          {
+            "node": "MERGE // Share file",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Get executionID + userID for questions": {
+      "main": [
+        [
+          {
+            "node": "WaitingPage // Creating questions",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MERGE // executionID & sub-features",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MERGE // core data + execID + userID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE // executionID & sub-features": {
+      "main": [
+        [
+          {
+            "node": "Prepare data for questions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse sub-features / sub-tasks": {
+      "main": [
+        [
+          {
+            "node": "MERGE // executionID & sub-features",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Prepare data for questions": {
+      "main": [
+        [
+          {
+            "node": "loop // Get questions",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MERGE core data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE core data": {
+      "main": [
+        [
+          {
+            "node": "Parse core data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse core data": {
+      "main": [
+        [
+          {
+            "node": "MERGE // core data + execID + userID",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get executionId + userId": {
+      "main": [
+        [
+          {
+            "node": "WaitingPage // Injecting datasets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MERGE // Share file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get core data": {
+      "main": [
+        [
+          {
+            "node": "PREPARE data for publishing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE // core data + execID + userID": {
+      "main": [
+        [
+          {
+            "node": "Get executionId + userId",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get core data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get data": {
+      "main": [
+        [
+          {
+            "node": "WaitingPage // Start process",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Handle files formats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preprocess chunks": {
+      "main": [
+        [
+          {
+            "node": "Get modules from chunks_xAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get modules from chunks_xAI": {
+      "main": [
+        [
+          {
+            "node": "LOOP // Get modules",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LOOP // Get modules": {
+      "main": [
+        [
+          {
+            "node": "MERGE // AI modules & executionId",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Preprocess chunks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if user added images": {
+      "main": [
+        [
+          {
+            "node": "Get array of images",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create modules batches // 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get array of images": {
+      "main": [
+        [
+          {
+            "node": "LOOP // Get images",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LOOP // Get images": {
+      "main": [
+        [
+          {
+            "node": "Parse AI output to flat Array",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get array of keywords and uniqueId",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get array of keywords and uniqueId": {
+      "main": [
+        [
+          {
+            "node": "How semantically related_xAI1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "How semantically related_xAI1": {
+      "main": [
+        [
+          {
+            "node": "LOOP // Get images",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI output to flat Array": {
+      "main": [
+        [
+          {
+            "node": "Get all modules",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get all modules": {
+      "main": [
+        [
+          {
+            "node": "LOOP // Get modules1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find relative module and images descriptions": {
+      "main": [
+        [
+          {
+            "node": "Check if this module has relative images",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LOOP // Get modules1": {
+      "main": [
+        [
+          {
+            "node": "Create modules batches // 1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find relative module and images descriptions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if this module has relative images": {
+      "main": [
+        [
+          {
+            "node": "Enrich the module by images description_xAI",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Parse module",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrich the module by images description_xAI": {
+      "main": [
+        [
+          {
+            "node": "Parse ai module after enriched",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse module": {
+      "main": [
+        [
+          {
+            "node": "LOOP // Get modules1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse ai module after enriched": {
+      "main": [
+        [
+          {
+            "node": "LOOP // Get modules1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Check if user added images",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7f674fd1-63e0-490b-9b44-9317a355f84c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8faf12112c4b0fd3ff8334946d408ed6c3ad89eaf67b0a52804db6be1d427e11"
+  },
+  "id": "9xWtDeJpxkT2z7hP",
+  "tags": []
+}
