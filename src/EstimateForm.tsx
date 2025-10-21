@@ -8,9 +8,8 @@ import { rtdb } from './firebase.ts';
 import { loadStripe } from '@stripe/stripe-js';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
+import { FREE_LIMIT, TEXT_FILES_LIMIT, VISUAL_FILES_LIMIT } from './shared/config/config.ts';
 
-// --- CONFIG ---
-const FREE_LIMIT = 3;
 
 // --- ENV ---
 const isDev = import.meta.env.MODE === 'development';
@@ -42,6 +41,8 @@ interface EstimateFormProps {
   onFullLogout: () => Promise<void>;
 }
 
+type FileType = 'file' | 'visual'
+
 export default function EstimateForm({
   user,
   userName,
@@ -56,8 +57,10 @@ export default function EstimateForm({
   const [projectName, setProjectName] = useState('');
   const [notes, setNotes] = useState('');
   const [entries, setEntries] = useState<
-    { file: File; type: string; description: string }[]
+    { file: File; type: FileType; description: string }[]
   >([]);
+  const [numberOfTextFiles, setNumberOfTextFiles] = useState(0);
+  const [numberOfVisualFiles, setNumberOfVisualFiles] = useState(0);
   const [processing, setProcessing] = useState(false);
   const navigate = useNavigate();
 
@@ -99,20 +102,42 @@ export default function EstimateForm({
     }
   };
 
+  const checkFilesLimit = (type: FileType) => {
+    if (type === 'file') {
+      return numberOfTextFiles === TEXT_FILES_LIMIT
+    } else if(type === 'visual') {
+      return numberOfVisualFiles === VISUAL_FILES_LIMIT   
+    }
+  }
+
   // Файлы
-  const handleFileAdd = (type: 'file' | 'visual') => () => {
+  const handleFileAdd = (type: FileType) => () => {
+    if (checkFilesLimit(type)) {
+      return;
+    }
+
     const input = document.createElement('input');
     input.type = 'file';
     input.accept =
       type === 'file'
         ? '.pdf,.doc,.docx,.txt,.csv'
         : 'image/png,image/jpeg';
+
     input.onchange = () => {
       const file = input.files?.[0];
-      if (file) setEntries((prev) => [...prev, { file, type, description: '' }]);
+      if (file) {
+        setEntries(prev => [...prev, { file, type, description: '' }]);
+        if (type === 'file') {
+          setNumberOfTextFiles(prev => prev + 1);
+        } else if (type === 'visual') {
+          setNumberOfVisualFiles(prev => prev + 1);
+        }
+      }
     };
+
     input.click();
   };
+
 
   const handleDescriptionChange = (i: number, desc: string) => {
     setEntries((prev) =>
@@ -120,7 +145,12 @@ export default function EstimateForm({
     );
   };
 
-  const handleRemove = (i: number) => {
+  const handleRemove = (i: number, type: FileType) => {
+    if (type === 'file') {
+      setNumberOfTextFiles(prev => prev - 1);
+    } else if (type === 'visual') {
+      setNumberOfVisualFiles(prev => prev - 1);
+    }
     setEntries((prev) => prev.filter((_, idx) => idx !== i));
   };
 
@@ -210,6 +240,9 @@ export default function EstimateForm({
     }
   };
 
+  const is_txt_files_limit = numberOfTextFiles >= TEXT_FILES_LIMIT;
+  const is_visual_files_limit = numberOfVisualFiles >= VISUAL_FILES_LIMIT
+
   return (
     <div className="relative bg-white/90 backdrop-blur border border-neutral-200 p-8 rounded-2xl shadow-sm space-y-6 max-w-3xl mx-auto">
       <div className="absolute top-4 right-4 flex gap-2">
@@ -249,20 +282,22 @@ export default function EstimateForm({
         />
 
         <div className="flex gap-3">
-          <button
+          {!is_txt_files_limit && <button
             type="button"
             onClick={handleFileAdd('file')}
             className="h-10 px-3 rounded-lg bg-neutral-800 text-white hover:bg-neutral-700 transition"
           >
             Add File
           </button>
-          <button
+          }
+          {!is_visual_files_limit && <button
             type="button"
             onClick={handleFileAdd('visual')}
             className="h-10 px-3 rounded-lg bg-neutral-100 text-neutral-800 hover:bg-neutral-200 transition border border-neutral-300"
           >
             Add Visual
           </button>
+          }
         </div>
 
         {entries.map((entry, i) => (
@@ -278,7 +313,7 @@ export default function EstimateForm({
             />
             <button
               type="button"
-              onClick={() => handleRemove(i)}
+              onClick={() => handleRemove(i, entry.type)}
               className="h-10 px-3 rounded-lg text-red-600 hover:bg-red-50"
             >
               Remove
@@ -294,7 +329,8 @@ export default function EstimateForm({
           {processing ? 'Processing...' : 'Submit'}
         </button>
       </form>
-
+      {is_txt_files_limit && <div><p>You have reached the text files limit</p></div>}
+      {is_visual_files_limit && <div><p>You have reached the visual files limit</p></div>}
       <button
         onClick={async () => {
           const token = await user.getIdToken(true);
