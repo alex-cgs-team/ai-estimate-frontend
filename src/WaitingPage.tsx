@@ -65,7 +65,6 @@ export default function WaitingPage({ user }: { user: any }) {
           </a>
         </div>
       )}
-      test
     </div>
   );
 }
