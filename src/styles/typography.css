@@ -1,0 +1,5 @@
+@import "tailwindcss";
+
+@utility text-footer {
+  @apply font-sans text-sm leading-[20px] text-gray-500;
+}

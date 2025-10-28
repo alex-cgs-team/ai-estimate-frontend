@@ -1,42 +1,33 @@
 // src/App.tsx
-// Корневой компонент приложения.
-// Содержит настройку роутинга и подписку на статус авторизации Firebase.
-// Маршруты:
-//   "/" — контейнер авторизации и форма эстимейта
-//   "/waiting/:executionId" — страница ожидания прогресса конкретного расчёта
-// Любой другой путь перенаправляется на корень.
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { auth } from './firebase.ts';
+import { auth } from './firebase';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import AuthContainer from './components/AuthContainer';
 import WaitingPage from './WaitingPage';
+import AppLayout from './layout';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true); // важно!
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, u => setUser(u));
+    const unsub = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+      setLoading(false);
+    });
     return unsub;
   }, []);
 
-  // Пока идёт определение авторизации, можно показывать заглушку
-  if (user === undefined) return null;
+  if (loading) return null; 
 
   return (
     <BrowserRouter>
       <Routes>
-        {/* Доступ к EstimateForm и AuthContainer */}
-        <Route
-          path="/"
-          element={<AuthContainer />}
-        />
-        {/* Страница ожидания прогресса */}
-        <Route
-          path="/waiting/:executionId"
-          element={<WaitingPage user={user} />}
-        />
-        {/* Любой другой путь — редирект на корень */}
+        <Route element={<AppLayout />}>
+          <Route path="/" element={<AuthContainer />} />
+          <Route path="/waiting/:executionId" element={<WaitingPage user={user} />} />
+        </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
