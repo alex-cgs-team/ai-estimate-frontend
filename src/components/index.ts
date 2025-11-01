@@ -1,2 +1,10 @@
 export { default as Footer } from "./footer/Footer.component";
 export { default as Header } from "./header/Header.component";
+export { Welcome } from "./welcome/Welcome.component";
+export { Input } from "./input/Input.component";
+export { PhoneField } from "./phone-input/PhoneInput.component";
+export { Button } from "./button/Button.component";
+export { OTPCode } from "./otp-code/OtpCode.component";
+export { ArrowBack } from "./arrow-back/ArrowBack.component";
+export { DropDown } from "./dropdown/DropDown.component";
+export { ProtectedRoute } from "./protected-route/ProtectedRoute.component";

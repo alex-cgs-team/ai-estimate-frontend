@@ -3,3 +3,15 @@
 @utility text-footer {
   @apply font-sans text-sm leading-[20px] text-gray-500;
 }
+
+@utility text-title {
+  @apply font-[Geist] font-medium text-[24px] leading-[140%] text-[#0F0F0F];
+}
+
+@utility text-subtitle {
+  @apply font-sans font-normal text-sm leading-normal text-[#6C6D71];
+}
+
+@utility text-body {
+  @apply font-sans text-sm leading-[normal] text-[#0F0F0F];
+}

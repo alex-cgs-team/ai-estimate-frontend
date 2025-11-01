@@ -1,35 +1,32 @@
-// src/App.tsx
-import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { auth } from './firebase';
-import { onAuthStateChanged, type User } from 'firebase/auth';
-import AuthContainer from './components/AuthContainer';
-import WaitingPage from './WaitingPage';
-import AppLayout from './layout';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import AppLayout from "./layout";
+import { Providers } from "./providers/providers";
+import { ROUTE_ELEMENT, ROUTES } from "./shared/constants/routes";
+import { ProtectedRoute } from "./components";
 
 export default function App() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true); // важно!
-
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-      setLoading(false);
-    });
-    return unsub;
-  }, []);
-
-  if (loading) return null; 
-
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<AppLayout />}>
-          <Route path="/" element={<AuthContainer />} />
-          <Route path="/waiting/:executionId" element={<WaitingPage user={user} />} />
-        </Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <Providers>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<AppLayout />}>
+            <Route path={ROUTES.welcome} element={ROUTE_ELEMENT.welcome} />
+            <Route
+              path={ROUTES.codeVerification}
+              element={ROUTE_ELEMENT.codeVerification}
+            />
+            <Route element={<ProtectedRoute redirectTo={ROUTES.welcome} />}>
+              <Route
+                path={ROUTES.onboarding}
+                element={ROUTE_ELEMENT.onboarding}
+              />
+              <Route path={ROUTES.allSet} element={ROUTE_ELEMENT.allSet} />
+              <Route path={ROUTES.main} element={ROUTE_ELEMENT.main} />
+            </Route>
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </Providers>
   );
 }
