@@ -6,3 +6,12 @@ export const roles = [
   { label: "CEO", value: "ceo" },
   { label: "CTO", value: "cto" },
 ];
+
+export const roleLabels: Record<string, string> = {
+  designer: "Designer",
+  smm: "SMM specialist",
+  ba: "Business analyst",
+  pm: "Project manager",
+  ceo: "CEO",
+  cto: "CTO",
+};

@@ -23,6 +23,11 @@ export default function App() {
               <Route path={ROUTES.allSet} element={ROUTE_ELEMENT.allSet} />
               <Route path={ROUTES.main} element={ROUTE_ELEMENT.main} />
               <Route path={ROUTES.progress} element={ROUTE_ELEMENT.progress} />
+              <Route path={ROUTES.profile} element={ROUTE_ELEMENT.profile} />
+              <Route
+                path={ROUTES.changePhone}
+                element={ROUTE_ELEMENT.changePhone}
+              />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

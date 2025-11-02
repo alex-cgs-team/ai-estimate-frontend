@@ -1,10 +1,10 @@
 import { MobilePNG } from "@/assets/images";
 import { ArrowBack, OTPCode } from "@/components";
-import { useAuth } from "@/hooks";
+import { useAuth, useError } from "@/hooks";
 import { ROUTES } from "@/shared/constants/routes";
 import { ERRORS_TEXT, TEXT } from "@/shared/constants/text";
 import { Edit3Icon, Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -14,32 +14,49 @@ export const CodeVerification = () => {
   const [loading, setLoading] = useState(false);
   const [isWrongCode, setIsWrongCode] = useState(false);
 
-  const { verifyCode, signInWithPhone } = useAuth();
+  const { verifyCode, signInWithPhone, confirmNewPhone } = useAuth();
+  const { setToastErrorText } = useError();
 
   const location = useLocation();
-  const phone = location.state?.phone;
+  const phone: string | undefined = location.state?.phone;
+  const isChangePhone: boolean = Boolean(location.state?.changePhone);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!phone) {
-      navigate("/");
-    }
+    if (!phone) navigate("/");
   }, [phone, navigate]);
 
-  const handleVerify = async (code: string) => {
+  const handleVerifyLogin = useCallback(
+    async (otp: string) => {
+      const isNewUser = await verifyCode(otp);
+      if (isNewUser) navigate(ROUTES.onboarding);
+      else navigate(ROUTES.main);
+    },
+    [verifyCode, navigate]
+  );
+
+  const handleVerifyChangePhone = useCallback(
+    async (otp: string) => {
+      await confirmNewPhone(otp);
+      toast.success(TEXT.phone_changed_success);
+      navigate(ROUTES.profile ?? "/profile");
+    },
+    [confirmNewPhone, navigate]
+  );
+
+  const handleVerify = async (otp: string) => {
     setLoading(true);
     try {
-      const isNewUser = await verifyCode(code);
-      if (isNewUser) {
-        navigate(ROUTES.onboarding);
+      if (isChangePhone) {
+        await handleVerifyChangePhone(otp);
       } else {
-        navigate(ROUTES.main);
+        await handleVerifyLogin(otp);
       }
     } catch (error) {
       toast.error(ERRORS_TEXT.invalid_code);
       setIsWrongCode(true);
-      console.log(error);
+      console.error(error);
     } finally {
       setLoading(false);
       setDisabled(false);
@@ -56,14 +73,15 @@ export const CodeVerification = () => {
   };
 
   const resendCode = async () => {
+    if (!phone) return;
     setCode("");
     setIsWrongCode(false);
     setLoading(true);
     try {
       await signInWithPhone(phone);
-    } catch (error) {
-      toast.error(ERRORS_TEXT.send_code_error);
-      console.log(error);
+      toast.success(TEXT.code_sent_again);
+    } catch {
+      setToastErrorText(ERRORS_TEXT.send_code_error);
     } finally {
       setLoading(false);
     }
@@ -72,7 +90,6 @@ export const CodeVerification = () => {
   return (
     <div className="flex items-center justify-center mt-20 flex-col gap-6 max-w-sm mx-auto">
       <ArrowBack />
-
       <img src={MobilePNG} alt="Magic trick" />
       <div className="flex-col text-center gap-1 flex">
         <p className="text-title">{TEXT.check_out_phone}</p>
@@ -82,14 +99,15 @@ export const CodeVerification = () => {
             {phone}
           </p>
           <Edit3Icon
-            onClick={() => navigate(ROUTES.welcome)}
+            onClick={() =>
+              navigate(isChangePhone ? ROUTES.changePhone : ROUTES.welcome)
+            }
             className="cursor-pointer"
             size={20}
             color="#6C6D71"
           />
         </div>
       </div>
-
       <OTPCode
         otp={code}
         setOtp={handleOtpChange}
@@ -105,15 +123,15 @@ export const CodeVerification = () => {
           />
         </div>
       )}
-
       <div className="flex justify-center items-center gap-1">
         <p className="text-subtitle">{TEXT.did_not_get_code}</p>
-        <p
+        <button
           onClick={resendCode}
-          className="text-subtitle cursor-pointer text-purple-400"
+          className="text-subtitle cursor-pointer text-purple-400 disabled:opacity-50"
+          disabled={loading}
         >
           {TEXT.resend_code}
-        </p>
+        </button>
       </div>
     </div>
   );

@@ -27,7 +27,7 @@ export function ModalPortal({ children, onClose }: Props) {
     >
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
 
-      <div className="relative z-10 w-[420px] rounded-2xl bg-white p-6 shadow-xl border border-[#F1F3F8]">
+      <div className="relative z-10 w-[420px] rounded-2xl bg-white p-6 shadow-xl border border-[#F1F3F8] mx-4">
         {children}
       </div>
     </div>,

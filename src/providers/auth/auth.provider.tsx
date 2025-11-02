@@ -4,14 +4,16 @@ import { useAuthStore } from "@/stores/auth/auth.store";
 import { AuthContext } from "./auth.context";
 import {
   getAdditionalUserInfo,
+  PhoneAuthProvider,
   signInWithPhoneNumber,
+  updatePhoneNumber,
   type ConfirmationResult,
   type User,
 } from "firebase/auth";
 import { ensureCaptcha } from "@/utils";
 import { auth, rtdb } from "@/firebase";
 import type { IProfile, ISaveProfile } from "@/types/types";
-import { ref as dbRef, set } from "firebase/database";
+import { ref as dbRef, set, update } from "firebase/database";
 
 type Props = {
   children: ReactNode;
@@ -20,16 +22,20 @@ type Props = {
 export type AuthContextType = {
   signInWithPhone: (phone: string) => Promise<void>;
   verifyCode: (code: string) => Promise<boolean | undefined>;
+  confirmNewPhone: (code: string) => Promise<void>;
   saveProfile: (data: IProfile) => Promise<void>;
   setUser: (user: User | null) => void;
   setProfile: (profile: IProfile | null) => void;
   incrementUsage: () => void;
+  signOut: () => Promise<void>;
+  updateProfile: (data: Partial<ISaveProfile>) => Promise<void>;
   user: User | null;
   profile: IProfile | null;
 };
 
 export function AuthProvider({ children }: Props) {
-  const { setUser, user, profile, setProfile, incrementUsage } = useAuthStore();
+  const { setUser, user, profile, setProfile, incrementUsage, patchProfile } =
+    useAuthStore();
 
   const [confirmation, setConfirmation] = useState<ConfirmationResult | null>(
     null
@@ -56,6 +62,19 @@ export function AuthProvider({ children }: Props) {
     [confirmation, setUser]
   );
 
+  const confirmNewPhone = useCallback(
+    async (code: string) => {
+      if (!confirmation) throw new Error("No verification started");
+      const credential = PhoneAuthProvider.credential(
+        confirmation.verificationId,
+        code
+      );
+
+      await updatePhoneNumber(auth.currentUser!, credential);
+    },
+    [confirmation]
+  );
+
   const saveProfile = useCallback(
     async (data: ISaveProfile) => {
       if (!user) return;
@@ -71,6 +90,26 @@ export function AuthProvider({ children }: Props) {
     [user, setProfile]
   );
 
+  const updateProfile = useCallback(
+    async (data: Partial<ISaveProfile>) => {
+      if (!Object.keys(data).length) return;
+      if (!user) return;
+
+      await update(dbRef(rtdb, `profiles/${user.uid}`), {
+        ...data,
+      });
+
+      patchProfile(data);
+    },
+    [user, patchProfile]
+  );
+
+  const signOut = useCallback(async () => {
+    await auth.signOut();
+    setUser(null);
+    setProfile(null);
+  }, [setUser, setProfile]);
+
   const value: AuthContextType = useMemo(
     () => ({
       signInWithPhone,
@@ -81,6 +120,9 @@ export function AuthProvider({ children }: Props) {
       profile,
       setProfile,
       incrementUsage,
+      signOut,
+      updateProfile,
+      confirmNewPhone,
     }),
     [
       signInWithPhone,
@@ -91,6 +133,9 @@ export function AuthProvider({ children }: Props) {
       profile,
       setProfile,
       incrementUsage,
+      signOut,
+      updateProfile,
+      confirmNewPhone,
     ]
   );
 

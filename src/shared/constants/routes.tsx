@@ -1,8 +1,10 @@
 import {
   AllSet,
+  ChangeProfile,
   CodeVerification,
   Main,
   Onboarding,
+  Profile,
   Progress,
   WelcomePage,
 } from "@/pages";
@@ -15,6 +17,8 @@ export const ROUTES = {
   allSet: "/all-set",
   main: "/",
   progress: "/progress",
+  profile: "/profile",
+  changePhone: "/change-profile",
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;
@@ -28,4 +32,6 @@ export const ROUTE_ELEMENT: Record<RouteKey, ReactElement> = {
   allSet: <AllSet />,
   main: <Main />,
   progress: <Progress />,
+  profile: <Profile />,
+  changePhone: <ChangeProfile />,
 };

@@ -8,6 +8,7 @@ type Props = {
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   className?: string;
+  type?: "white" | "black";
 };
 
 export const Button = ({
@@ -17,31 +18,47 @@ export const Button = ({
   isLoading,
   leftIcon,
   rightIcon,
-  className,
+  className = "",
+  type = "black",
 }: Props) => {
+  const baseStyles =
+    "w-full h-10 rounded-xl py-1 cursor-pointer flex items-center justify-center gap-2 transition";
+
+  const variants: Record<typeof type, string> = {
+    black: "bg-black text-white hover:bg-[#111] active:scale-[0.98]",
+    white:
+      "bg-white text-black border border-[#E5E7EB] hover:bg-gray-50 active:scale-[0.98]",
+  };
+
+  const disabledStyles =
+    disabled || isLoading ? "opacity-50 pointer-events-none" : "";
+
   return (
     <button
-      className={`w-full h-10 bg-black rounded-xl py-1 cursor-pointer ${className} ${
-        (disabled || isLoading) && "opacity-50"
-      }`}
+      className={`${baseStyles} ${variants[type]} ${disabledStyles} ${className}`}
       onClick={onClick}
       disabled={disabled}
     >
       {isLoading ? (
-        <div className="flex justify-center items-center">
-          <Loader2
-            size={18}
-            className="animate-spin text-white"
-            strokeWidth={2.5}
-          />
-        </div>
+        <Loader2
+          size={18}
+          className={`animate-spin ${
+            type === "white" ? "text-black" : "text-white"
+          }`}
+          strokeWidth={2.5}
+        />
       ) : (
-        <div className="flex items-center justify-center gap-2">
-          {leftIcon && leftIcon}
-          <span className="text-body text-white">{title}</span>
-
-          {rightIcon && rightIcon}
-        </div>
+        <>
+          {leftIcon}
+          <span
+            className={`text-body ${
+              type === "white" ? "text-black" : "text-white"
+            }`}
+          >
+            {title}
+          </span>
+          {rightIcon}
+        </>
       )}
     </button>
   );

@@ -6,3 +6,4 @@ export { default as FolderPNG } from "./folder.png";
 export { default as LoadingPNG } from "./loading.png";
 export { default as UserProfilePNG } from "./user-profile.png";
 export { default as CreditIconPNG } from "./credit-icon.png";
+export { default as ChangePhonePNG } from "./change-phone.png";

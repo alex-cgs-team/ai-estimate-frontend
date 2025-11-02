@@ -49,6 +49,23 @@ export const TEXT = Object.freeze({
   link_was_copied: "Copied",
   go_to_your_file: "Go to your file",
   unlimited: "Unlimited",
+  view_profile: "View profile",
+  log_out: "Log out",
+  personal_info: "Personal info",
+  name: "Name",
+  role: "Role",
+  account: "Account",
+  sign_out: "Sign out",
+  delete_account: "Delete Account",
+  edit: "Edit",
+  cancel: "Cancel",
+  save: "Save",
+  profile_updated: "Profile was updated",
+  change_phone: "Change your phone number",
+  new_phone: "New phone number",
+  get_code: "Get the code",
+  code_sent_again: "Code send again",
+  phone_changed_success: "Phone was changed",
 });
 
 export const ERRORS_TEXT = Object.freeze({
@@ -57,6 +74,8 @@ export const ERRORS_TEXT = Object.freeze({
   submit_error: "Submit error",
   copy_error: "Link wasn't copied",
   stripe_error: "Payment error",
+  user_delete_error: "User delete error",
+  profile_update_error: "Profile update error",
 });
 
 export const MODALS_TEXT = Object.freeze({
@@ -65,4 +84,8 @@ export const MODALS_TEXT = Object.freeze({
   free_estimations: "free estimations.",
   upgrade_stripe: "Upgrade on Stripe",
   maybe_later: "Maybe later",
+  are_you_sure: "Are you sure?",
+  yes_delete: "Yes, delete",
+  delete_account:
+    "Deleting your account is permanent. You will no longer be able to create an account with this email.",
 });
