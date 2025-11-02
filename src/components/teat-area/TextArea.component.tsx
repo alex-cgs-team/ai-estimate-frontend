@@ -3,18 +3,19 @@ type Props = {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
-  type?: string;
   disabled?: boolean;
   error?: string | null;
+  rows?: number;
 };
 
-export const Input = ({
+export const TextArea = ({
   label,
   value,
   onChange,
   placeholder = "",
   disabled = false,
   error,
+  rows = 4,
 }: Props) => {
   return (
     <div className="flex flex-col gap-1 w-full">
@@ -22,16 +23,17 @@ export const Input = ({
         <label className="text-sm font-medium text-gray-700">{label}</label>
       )}
 
-      <input
+      <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         disabled={disabled}
+        rows={rows}
         className={`
-          w-full h-[42px] rounded-xl border px-3 py-2 text-sm outline-none
-          bg-white text-gray-900 placeholder:text-gray-400
+          w-full rounded-xl border px-3 py-2 text-sm
+          bg-white text-gray-900 placeholder:text-gray-400 outline-none
+          resize-none transition-all duration-200
           shadow-[0_1px_2px_rgba(0,0,0,0.05)]
-          transition-all duration-200 
 
           ${disabled ? "bg-gray-50 text-gray-400 cursor-not-allowed" : ""}
 

@@ -8,3 +8,6 @@ export { OTPCode } from "./otp-code/OtpCode.component";
 export { ArrowBack } from "./arrow-back/ArrowBack.component";
 export { DropDown } from "./dropdown/DropDown.component";
 export { ProtectedRoute } from "./protected-route/ProtectedRoute.component";
+export { TextArea } from "./teat-area/TextArea.component";
+export { FileDropzone } from "./file-drop/FileDrop.component";
+export { FilesList } from "./files-list/FilesList.component";

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @utility text-footer {
-  @apply font-sans text-sm leading-[20px] text-gray-500;
+  @apply font-[Geist] text-sm leading-[20px] text-gray-500;
 }
 
 @utility text-title {
@@ -9,9 +9,13 @@
 }
 
 @utility text-subtitle {
-  @apply font-sans font-normal text-sm leading-normal text-[#6C6D71];
+  @apply font-[Geist] font-normal text-sm leading-normal text-[#6C6D71];
 }
 
 @utility text-body {
-  @apply font-sans text-sm leading-[normal] text-[#0F0F0F];
+  @apply font-[Geist] text-sm leading-[normal] text-[#0F0F0F];
+}
+
+@utility text-header {
+  @apply font-[Geist] font-medium text-[24px] leading-[1.4] text-[#0F0F0F];
 }

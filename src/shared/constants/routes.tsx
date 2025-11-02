@@ -3,6 +3,7 @@ import {
   CodeVerification,
   Main,
   Onboarding,
+  Progress,
   WelcomePage,
 } from "@/pages";
 import type { ReactElement } from "react";
@@ -13,6 +14,7 @@ export const ROUTES = {
   onboarding: "/onboarding",
   allSet: "/all-set",
   main: "/",
+  progress: "/progress",
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;
@@ -25,4 +27,5 @@ export const ROUTE_ELEMENT: Record<RouteKey, ReactElement> = {
   onboarding: <Onboarding />,
   allSet: <AllSet />,
   main: <Main />,
+  progress: <Progress />,
 };

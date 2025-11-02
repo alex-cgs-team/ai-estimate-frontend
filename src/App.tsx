@@ -22,6 +22,7 @@ export default function App() {
               />
               <Route path={ROUTES.allSet} element={ROUTE_ELEMENT.allSet} />
               <Route path={ROUTES.main} element={ROUTE_ELEMENT.main} />
+              <Route path={ROUTES.progress} element={ROUTE_ELEMENT.progress} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
