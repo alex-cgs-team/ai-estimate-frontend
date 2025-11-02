@@ -7,6 +7,7 @@ type AuthState = {
   profile: IProfile | null;
   setUser: (user: User | null) => void;
   setProfile: (profile: IProfile | null) => void;
+  incrementUsage: () => void;
 };
 
 export const useAuthStore = create<AuthState>()((set) => ({
@@ -15,4 +16,17 @@ export const useAuthStore = create<AuthState>()((set) => ({
 
   setUser: (user) => set({ user }),
   setProfile: (profile) => set({ profile }),
+  incrementUsage: () =>
+    set((state) => {
+      if (!state.profile) return state;
+
+      return {
+        profile: {
+          ...state.profile,
+          usage: state.profile.usage
+            ? { ...state.profile.usage, count: state.profile.usage.count + 1 }
+            : { count: 1 },
+        },
+      };
+    }),
 }));

@@ -3,19 +3,21 @@ import { useState } from "react";
 import { ERRORS_TEXT, TEXT } from "@/shared/constants/text";
 import {
   ACCEPT_FILES,
+  FREE_LIMIT,
   TEXT_FILES_LIMIT,
   VISUAL_FILES_LIMIT,
 } from "@/shared/config/config";
 import type { FileEntry } from "@/types/types";
 import { getFileExt, getKind } from "@/utils";
 import { ArrowRight } from "lucide-react";
-import { useAuth, useError } from "@/hooks";
+import { useAuth, useError, useModal } from "@/hooks";
 import { ref as dbRef, push, runTransaction, set } from "firebase/database";
 import { v4 as uuidv4 } from "uuid";
 import { rtdb } from "@/firebase";
 import { N8N_WEBHOOK_URL } from "@/shared/constants/env";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/shared/constants/routes";
+import { LimitModal } from "@/modals";
 
 export const Main = () => {
   const [projectName, setProjectName] = useState("");
@@ -24,8 +26,10 @@ export const Main = () => {
   const [items, setItems] = useState<FileEntry[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const { user, profile } = useAuth();
+  const { user, profile, incrementUsage } = useAuth();
   const { setToastErrorText } = useError();
+
+  const { close, isVisible, toggle } = useModal();
 
   const navigate = useNavigate();
 
@@ -60,7 +64,16 @@ export const Main = () => {
     ]);
 
   const onSubmit = async () => {
-    if (isDisabled || !user) {
+    if (isDisabled || !user || !profile) {
+      return;
+    }
+    if (
+      profile?.usage &&
+      profile?.usage?.count >= FREE_LIMIT &&
+      !profile.usage.paid &&
+      profile.usage.status !== "active"
+    ) {
+      toggle();
       return;
     }
     setLoading(true);
@@ -104,7 +117,6 @@ export const Main = () => {
       });
       if (!resp.ok) throw new Error(`Webhook error ${resp.status}`);
       const respJson = await resp.json();
-      console.log(respJson);
 
       await push(operationsRef, {
         step: "n8n processing finished",
@@ -127,9 +139,9 @@ export const Main = () => {
         dbRef(rtdb, `profiles/${user.uid}/usage/count`),
         (c) => (c ?? 0) + 1
       );
+      incrementUsage();
       navigate(ROUTES.progress, { state: { executionId } });
-    } catch (error) {
-      console.log(error);
+    } catch {
       setToastErrorText(ERRORS_TEXT.submit_error);
     } finally {
       setLoading(false);
@@ -181,6 +193,7 @@ export const Main = () => {
           />
         </div>
       </div>
+      <LimitModal isVisible={isVisible} close={close} toggle={toggle} />
     </div>
   );
 };

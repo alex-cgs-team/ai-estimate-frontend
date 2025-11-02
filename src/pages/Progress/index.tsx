@@ -35,7 +35,6 @@ export const Progress = () => {
             ? { step: String(v.step), status: v.status, progress: v.progress }
             : { step: String(v) };
       });
-      console.log(last);
       setCurrent(last);
     });
 

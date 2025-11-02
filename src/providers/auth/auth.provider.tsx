@@ -10,7 +10,7 @@ import {
 } from "firebase/auth";
 import { ensureCaptcha } from "@/utils";
 import { auth, rtdb } from "@/firebase";
-import type { IProfile } from "@/types/types";
+import type { IProfile, ISaveProfile } from "@/types/types";
 import { ref as dbRef, set } from "firebase/database";
 
 type Props = {
@@ -23,12 +23,13 @@ export type AuthContextType = {
   saveProfile: (data: IProfile) => Promise<void>;
   setUser: (user: User | null) => void;
   setProfile: (profile: IProfile | null) => void;
+  incrementUsage: () => void;
   user: User | null;
   profile: IProfile | null;
 };
 
 export function AuthProvider({ children }: Props) {
-  const { setUser, user, profile, setProfile } = useAuthStore();
+  const { setUser, user, profile, setProfile, incrementUsage } = useAuthStore();
 
   const [confirmation, setConfirmation] = useState<ConfirmationResult | null>(
     null
@@ -56,7 +57,7 @@ export function AuthProvider({ children }: Props) {
   );
 
   const saveProfile = useCallback(
-    async (data: IProfile) => {
+    async (data: ISaveProfile) => {
       if (!user) return;
 
       await set(dbRef(rtdb, `profiles/${user.uid}`), {
@@ -65,7 +66,7 @@ export function AuthProvider({ children }: Props) {
         createdAt: Date.now(),
       });
 
-      setProfile(data);
+      setProfile({ ...data, usage: { count: 0 } });
     },
     [user, setProfile]
   );
@@ -79,6 +80,7 @@ export function AuthProvider({ children }: Props) {
       user,
       profile,
       setProfile,
+      incrementUsage,
     }),
     [
       signInWithPhone,
@@ -88,6 +90,7 @@ export function AuthProvider({ children }: Props) {
       user,
       profile,
       setProfile,
+      incrementUsage,
     ]
   );
 

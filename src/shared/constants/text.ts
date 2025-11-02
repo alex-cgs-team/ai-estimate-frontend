@@ -48,6 +48,7 @@ export const TEXT = Object.freeze({
   link_is_ready: "Your link is ready!",
   link_was_copied: "Copied",
   go_to_your_file: "Go to your file",
+  unlimited: "Unlimited",
 });
 
 export const ERRORS_TEXT = Object.freeze({
@@ -55,4 +56,13 @@ export const ERRORS_TEXT = Object.freeze({
   invalid_code: "Invalid code",
   submit_error: "Submit error",
   copy_error: "Link wasn't copied",
+  stripe_error: "Payment error",
+});
+
+export const MODALS_TEXT = Object.freeze({
+  free_limit: "Free limit reached",
+  used_all: " You’ve used all",
+  free_estimations: "free estimations.",
+  upgrade_stripe: "Upgrade on Stripe",
+  maybe_later: "Maybe later",
 });
