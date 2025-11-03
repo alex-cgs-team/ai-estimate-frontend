@@ -4,8 +4,10 @@ import {
   CodeVerification,
   Main,
   Onboarding,
+  PrivacyPolice,
   Profile,
   Progress,
+  TermsOfUse,
   WelcomePage,
 } from "@/pages";
 import type { ReactElement } from "react";
@@ -19,6 +21,8 @@ export const ROUTES = {
   progress: "/progress",
   profile: "/profile",
   changePhone: "/change-profile",
+  termsOfUse: "/terms-of-use",
+  privacyPolice: "/privacy-police",
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;
@@ -34,4 +38,6 @@ export const ROUTE_ELEMENT: Record<RouteKey, ReactElement> = {
   progress: <Progress />,
   profile: <Profile />,
   changePhone: <ChangeProfile />,
+  privacyPolice: <PrivacyPolice />,
+  termsOfUse: <TermsOfUse />,
 };

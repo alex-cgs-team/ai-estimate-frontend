@@ -15,6 +15,14 @@ export default function App() {
               path={ROUTES.codeVerification}
               element={ROUTE_ELEMENT.codeVerification}
             />
+            <Route
+              path={ROUTES.privacyPolice}
+              element={ROUTE_ELEMENT.privacyPolice}
+            />
+            <Route
+              path={ROUTES.termsOfUse}
+              element={ROUTE_ELEMENT.termsOfUse}
+            />
             <Route element={<ProtectedRoute redirectTo={ROUTES.welcome} />}>
               <Route
                 path={ROUTES.onboarding}

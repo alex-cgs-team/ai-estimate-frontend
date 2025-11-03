@@ -6,3 +6,5 @@ export { Main } from "./Main";
 export { Progress } from "./Progress";
 export { Profile } from "./Profile";
 export { ChangeProfile } from "./ChangePhone";
+export { TermsOfUse } from "./TermsOfUse";
+export { PrivacyPolice } from "./PrivacyPolice";

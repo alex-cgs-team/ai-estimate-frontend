@@ -6,7 +6,7 @@ import { ROUTES } from "@/shared/constants/routes";
 import { TEXT } from "@/shared/constants/text";
 import { ChevronRight, File, LogOutIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Header() {
   const { profile, user, signOut } = useAuth();
@@ -97,24 +97,20 @@ export default function Header() {
 
               <div className="my-2 h-px bg-[#F1F3F8]" />
 
-              <a
-                href="/privacy"
+              <Link
+                to={ROUTES.privacyPolice}
                 className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-[#F6F8FE] text-sm"
-                target="_blank"
-                rel="noopener noreferrer"
               >
                 <div className="flex items-center gap-2">
                   <File size={16} color="#0F0F0F" />
                   <span className="text-body">{TEXT.privacy_police}</span>
                 </div>
                 <ChevronRight size={16} color="#0F0F0F" />
-              </a>
+              </Link>
 
-              <a
-                href="/terms"
+              <Link
+                to={ROUTES.termsOfUse}
                 className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-[#F6F8FE] text-sm"
-                target="_blank"
-                rel="noopener noreferrer"
               >
                 <div className="flex items-center gap-2">
                   <File size={16} color="#0F0F0F" />
@@ -122,7 +118,7 @@ export default function Header() {
                 </div>
 
                 <ChevronRight size={16} color="#0F0F0F" />
-              </a>
+              </Link>
 
               <div className="my-2 h-px bg-[#F1F3F8]" />
 
