@@ -53,10 +53,10 @@ export const CodeVerification = () => {
       } else {
         await handleVerifyLogin(otp);
       }
-    } catch (error) {
+    } catch {
       toast.error(ERRORS_TEXT.invalid_code);
       setIsWrongCode(true);
-      console.error(error);
+      setCode("");
     } finally {
       setLoading(false);
       setDisabled(false);
@@ -88,7 +88,7 @@ export const CodeVerification = () => {
   };
 
   return (
-    <div className="flex items-center justify-center mt-20 flex-col gap-6 max-w-sm mx-auto">
+    <div className="flex items-center justify-center mt-20 flex-col gap-3 max-w-sm mx-auto">
       <ArrowBack />
       <img src={MobilePNG} alt="Magic trick" />
       <div className="flex-col text-center gap-1 flex">
