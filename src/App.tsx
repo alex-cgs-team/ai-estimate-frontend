@@ -1,44 +1,46 @@
-// src/App.tsx
-// Корневой компонент приложения.
-// Содержит настройку роутинга и подписку на статус авторизации Firebase.
-// Маршруты:
-//   "/" — контейнер авторизации и форма эстимейта
-//   "/waiting/:executionId" — страница ожидания прогресса конкретного расчёта
-// Любой другой путь перенаправляется на корень.
-import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { auth } from './firebase.ts';
-import { onAuthStateChanged, type User } from 'firebase/auth';
-import AuthContainer from './components/AuthContainer';
-import WaitingPage from './WaitingPage';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import AppLayout from "./layout";
+import { Providers } from "./providers/providers";
+import { ROUTE_ELEMENT, ROUTES } from "./shared/constants/routes";
+import { ProtectedRoute } from "./components";
 
 export default function App() {
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, u => setUser(u));
-    return unsub;
-  }, []);
-
-  // Пока идёт определение авторизации, можно показывать заглушку
-  if (user === undefined) return null;
-
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Доступ к EstimateForm и AuthContainer */}
-        <Route
-          path="/"
-          element={<AuthContainer />}
-        />
-        {/* Страница ожидания прогресса */}
-        <Route
-          path="/waiting/:executionId"
-          element={<WaitingPage user={user} />}
-        />
-        {/* Любой другой путь — редирект на корень */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <Providers>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<AppLayout />}>
+            <Route path={ROUTES.welcome} element={ROUTE_ELEMENT.welcome} />
+            <Route
+              path={ROUTES.codeVerification}
+              element={ROUTE_ELEMENT.codeVerification}
+            />
+            <Route
+              path={ROUTES.privacyPolice}
+              element={ROUTE_ELEMENT.privacyPolice}
+            />
+            <Route
+              path={ROUTES.termsOfUse}
+              element={ROUTE_ELEMENT.termsOfUse}
+            />
+            <Route element={<ProtectedRoute redirectTo={ROUTES.welcome} />}>
+              <Route
+                path={ROUTES.onboarding}
+                element={ROUTE_ELEMENT.onboarding}
+              />
+              <Route path={ROUTES.allSet} element={ROUTE_ELEMENT.allSet} />
+              <Route path={ROUTES.main} element={ROUTE_ELEMENT.main} />
+              <Route path={ROUTES.progress} element={ROUTE_ELEMENT.progress} />
+              <Route path={ROUTES.profile} element={ROUTE_ELEMENT.profile} />
+              <Route
+                path={ROUTES.changePhone}
+                element={ROUTE_ELEMENT.changePhone}
+              />
+            </Route>
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </Providers>
   );
 }
