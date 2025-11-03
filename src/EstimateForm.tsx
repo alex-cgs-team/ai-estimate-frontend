@@ -27,7 +27,7 @@ const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL as string;
 
 if (!STRIPE_PUBLISHABLE_KEY) throw new Error('Missing VITE_STRIPE_PUBLISHABLE_KEY');
 if (!isDev && !API_BASE) throw new Error('Missing VITE_BACKEND_URL in Preview/Prod');
-if (!STRIPE_PRICE_ID) throw new Error('Missing VITE_STRIPE_PRICE_ID');
+// if (!STRIPE_PRICE_ID) throw new Error('Missing VITE_STRIPE_PRICE_ID');
 if (!N8N_WEBHOOK_URL) throw new Error('Missing N8N_WEBHOOK_URL');
 
 // Stripe.js
