@@ -25,7 +25,7 @@ export const Welcome = () => {
     setFocus,
   } = useForm<FormValues>({
     mode: "onChange",
-    defaultValues: { phone: "380730651017" },
+    defaultValues: { phone: "" },
   });
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export const Welcome = () => {
     try {
       await signInWithPhone(data.phone);
       navigate(ROUTES.codeVerification, { state: { phone: data.phone } });
-    } catch (err) {
+    } catch {
       setToastErrorText(ERRORS_TEXT.send_code_error);
       setError("phone", {
         type: "manual",
@@ -48,7 +48,6 @@ export const Welcome = () => {
       });
       resetField("phone", { defaultValue: "" });
       setFocus("phone");
-      console.log(err);
     }
   };
 
