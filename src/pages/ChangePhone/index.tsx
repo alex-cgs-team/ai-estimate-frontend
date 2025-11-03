@@ -23,7 +23,7 @@ export const ChangeProfile = () => {
     setFocus,
   } = useForm<FormValues>({
     mode: "onChange",
-    defaultValues: { phone: "380730651017" },
+    defaultValues: { phone: "" },
   });
 
   const { signInWithPhone } = useAuth();
