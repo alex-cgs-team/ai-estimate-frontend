@@ -66,6 +66,11 @@ export const TEXT = Object.freeze({
   get_code: "Get the code",
   code_sent_again: "Code send again",
   phone_changed_success: "Phone was changed",
+  try_again: "Try again",
+  yes: "Yes",
+  no: "No",
+  not_specified: "Not specified",
+  we_wont_deduct: "We won’t deduct your attempt for this operation.",
 });
 
 export const ERRORS_TEXT = Object.freeze({
@@ -76,6 +81,10 @@ export const ERRORS_TEXT = Object.freeze({
   stripe_error: "Payment error",
   user_delete_error: "User delete error",
   profile_update_error: "Profile update error",
+  something_went_wrong: "😞 Oops! Something went wrong.",
+  working_on_it:
+    "We're already working to fix it. Please try again in a few moments.",
+  restore_data_error: "Restore data was failed",
 });
 
 export const MODALS_TEXT = Object.freeze({
@@ -88,4 +97,8 @@ export const MODALS_TEXT = Object.freeze({
   yes_delete: "Yes, delete",
   delete_account:
     "Deleting your account is permanent. You will no longer be able to create an account with this email.",
+  restore_data: "Restore data",
+  do_you_want_to_restore: "Do you want to restore previous information?",
+  upgrade_plan: "Upgrade your plan on Stripe",
+  unlimited_access: "Get unlimited access to all AI Estimate features.",
 });

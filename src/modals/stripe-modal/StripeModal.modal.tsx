@@ -1,11 +1,10 @@
 import { Modal } from "@/components";
 import { useStripe } from "@/hooks";
-import { FREE_LIMIT } from "@/shared/config/config";
 import { MODALS_TEXT } from "@/shared/constants/text";
 import type { UseModalReturn } from "@/types/types";
 import { Loader2 } from "lucide-react";
 
-export const LimitModal = ({ close, isVisible, toggle }: UseModalReturn) => {
+export const StripeModal = ({ close, isVisible, toggle }: UseModalReturn) => {
   const { goToCheckout, loading } = useStripe();
 
   return (
@@ -13,11 +12,10 @@ export const LimitModal = ({ close, isVisible, toggle }: UseModalReturn) => {
       close={close}
       isVisible={isVisible}
       toggle={toggle}
-      title={MODALS_TEXT.free_limit}
+      title={MODALS_TEXT.upgrade_plan}
     >
-      <h3 className="text-lg font-semibold mb-2"></h3>
       <p className="text-subtitle text-gray-600">
-        {MODALS_TEXT.used_all} {FREE_LIMIT} {MODALS_TEXT.free_estimations}
+        {MODALS_TEXT.unlimited_access}
       </p>
 
       <div className="mt-5 space-y-3">
