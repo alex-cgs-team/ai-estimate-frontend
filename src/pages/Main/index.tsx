@@ -1,5 +1,5 @@
 import { Button, FileDropzone, FilesList, Input, TextArea } from "@/components";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ERRORS_TEXT, TEXT } from "@/shared/constants/text";
 import {
   ACCEPT_FILES,
@@ -17,7 +17,9 @@ import { rtdb } from "@/firebase";
 import { N8N_WEBHOOK_URL } from "@/shared/constants/env";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/shared/constants/routes";
-import { LimitModal } from "@/modals";
+import { LimitModal, RestoreDataModal } from "@/modals";
+import { set as setKeyVal, get } from "idb-keyval";
+import { DB_KEYS } from "@/shared/constants/keys";
 
 export const Main = () => {
   const [projectName, setProjectName] = useState("");
@@ -27,11 +29,23 @@ export const Main = () => {
   const [loading, setLoading] = useState(false);
 
   const { user, profile, incrementUsage } = useAuth();
-  const { setToastErrorText } = useError();
+  const { setToastErrorText, isN8NError, setIsN8NError } = useError();
 
   const { close, isVisible, toggle } = useModal();
+  const {
+    close: closeRestore,
+    toggle: toggleRestore,
+    isVisible: isRestoreVisible,
+  } = useModal();
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isN8NError) {
+      toggleRestore();
+      setIsN8NError(false);
+    }
+  }, []);
 
   const imagesCount = items.filter((i) => i.kind === "image").length;
   const textsCount = items.filter((i) => i.kind === "text").length;
@@ -40,6 +54,14 @@ export const Main = () => {
   const textDisabled = textsCount >= TEXT_FILES_LIMIT;
 
   const isDisabled = projectName.length < 3 || items.length < 1;
+
+  const restoreData = async () => {
+    const draft = await get(DB_KEYS.DRAFT);
+    if (!draft) return;
+    setProjectName(draft.projectName);
+    setNotes(draft.notes);
+    setItems(draft.items);
+  };
 
   const handleDescriptionChange = (id: string, description: string) => {
     setItems((prev) =>
@@ -135,6 +157,12 @@ export const Main = () => {
         createdAt: Date.now(),
       });
 
+      await setKeyVal(DB_KEYS.DRAFT, {
+        projectName,
+        notes,
+        items,
+      });
+
       await runTransaction(
         dbRef(rtdb, `profiles/${user.uid}/usage/count`),
         (c) => (c ?? 0) + 1
@@ -194,6 +222,12 @@ export const Main = () => {
         </div>
       </div>
       <LimitModal isVisible={isVisible} close={close} toggle={toggle} />
+      <RestoreDataModal
+        restore={restoreData}
+        isVisible={isRestoreVisible}
+        close={closeRestore}
+        toggle={toggleRestore}
+      />
     </div>
   );
 };

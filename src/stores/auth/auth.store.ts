@@ -8,6 +8,7 @@ type AuthState = {
   setUser: (user: User | null) => void;
   setProfile: (profile: IProfile | null) => void;
   incrementUsage: () => void;
+  decreaseUsage: () => void;
   patchProfile: (patch: Partial<IProfile>) => void;
 };
 
@@ -30,6 +31,20 @@ export const useAuthStore = create<AuthState>()((set) => ({
           ...state.profile,
           usage: state.profile.usage
             ? { ...state.profile.usage, count: state.profile.usage.count + 1 }
+            : { count: 1 },
+        },
+      };
+    }),
+
+  decreaseUsage: () =>
+    set((state) => {
+      if (!state.profile) return state;
+
+      return {
+        profile: {
+          ...state.profile,
+          usage: state.profile.usage
+            ? { ...state.profile.usage, count: state.profile.usage.count - 1 }
             : { count: 1 },
         },
       };
