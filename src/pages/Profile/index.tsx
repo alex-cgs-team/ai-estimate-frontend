@@ -12,7 +12,7 @@ const NameEdit = ({ close }: { close: () => void }) => {
   const { profile, user, updateProfile } = useAuth();
   const [name, setName] = useState(profile ? profile.name : "");
   const [loading, setLoading] = useState(false);
-  if (!profile || !user) {
+  if (!user) {
     return null;
   }
 
@@ -21,6 +21,7 @@ const NameEdit = ({ close }: { close: () => void }) => {
     try {
       await updateProfile({ name });
       toast.success(TEXT.profile_updated);
+      close();
     } catch {
       toast.error(ERRORS_TEXT.profile_update_error);
     } finally {
@@ -48,7 +49,7 @@ const RoleEdit = ({ close }: { close: () => void }) => {
   const { profile, user, updateProfile } = useAuth();
   const [role, setRole] = useState(profile ? profile.role : "");
   const [loading, setLoading] = useState(false);
-  if (!profile || !user) {
+  if (!user) {
     return null;
   }
 
@@ -57,15 +58,14 @@ const RoleEdit = ({ close }: { close: () => void }) => {
     try {
       await updateProfile({ role });
       toast.success(TEXT.profile_updated);
+      close();
     } catch {
       toast.error(ERRORS_TEXT.profile_update_error);
     } finally {
       setLoading(false);
     }
   };
-  if (!profile || !user) {
-    return null;
-  }
+
   return (
     <div>
       <DropDown value={role} onChange={setRole} options={roles} />
@@ -92,32 +92,31 @@ export const Profile = () => {
 
   const [activeEdit, setActiveEdit] = useState<null | string>(null);
 
-  const info =
-    profile && user
-      ? [
-          {
-            key: "phone",
-            title: TEXT.phone_number,
-            value: user.phoneNumber,
-            onEditClick: () => navigate(ROUTES.changePhone),
-            EditComponent: null,
-          },
-          {
-            key: "name",
-            title: TEXT.name,
-            value: profile.name,
-            onEditClick: () => setActiveEdit("name"),
-            EditComponent: <NameEdit close={() => setActiveEdit(null)} />,
-          },
-          {
-            key: "role",
-            title: TEXT.role,
-            value: roleLabels[profile.role],
-            onEditClick: () => setActiveEdit("role"),
-            EditComponent: <RoleEdit close={() => setActiveEdit(null)} />,
-          },
-        ]
-      : [];
+  const info = user
+    ? [
+        {
+          key: "phone",
+          title: TEXT.phone_number,
+          value: user.phoneNumber,
+          onEditClick: () => navigate(ROUTES.changePhone),
+          EditComponent: null,
+        },
+        {
+          key: "name",
+          title: TEXT.name,
+          value: profile?.name ?? "",
+          onEditClick: () => setActiveEdit("name"),
+          EditComponent: <NameEdit close={() => setActiveEdit(null)} />,
+        },
+        {
+          key: "role",
+          title: TEXT.role,
+          value: profile ? roleLabels[profile.role] : "",
+          onEditClick: () => setActiveEdit("role"),
+          EditComponent: <RoleEdit close={() => setActiveEdit(null)} />,
+        },
+      ]
+    : [];
   return (
     <div>
       <ArrowBack />
@@ -133,7 +132,9 @@ export const Profile = () => {
                 {activeEdit === item.key && item.EditComponent ? (
                   <div>{item.EditComponent}</div>
                 ) : (
-                  <p className="text-body">{item.value}</p>
+                  <p className="text-body">
+                    {item.value ? item.value : TEXT.not_specified}
+                  </p>
                 )}
                 <div className="w-full flex justify-end">
                   <button
