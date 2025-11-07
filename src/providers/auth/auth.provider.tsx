@@ -27,6 +27,7 @@ export type AuthContextType = {
   setUser: (user: User | null) => void;
   setProfile: (profile: IProfile | null) => void;
   incrementUsage: () => void;
+  decreaseUsage: () => void;
   signOut: () => Promise<void>;
   updateProfile: (data: Partial<ISaveProfile>) => Promise<void>;
   user: User | null;
@@ -34,8 +35,15 @@ export type AuthContextType = {
 };
 
 export function AuthProvider({ children }: Props) {
-  const { setUser, user, profile, setProfile, incrementUsage, patchProfile } =
-    useAuthStore();
+  const {
+    setUser,
+    user,
+    profile,
+    setProfile,
+    incrementUsage,
+    patchProfile,
+    decreaseUsage,
+  } = useAuthStore();
 
   const [confirmation, setConfirmation] = useState<ConfirmationResult | null>(
     null
@@ -120,6 +128,7 @@ export function AuthProvider({ children }: Props) {
       profile,
       setProfile,
       incrementUsage,
+      decreaseUsage,
       signOut,
       updateProfile,
       confirmNewPhone,
@@ -136,6 +145,7 @@ export function AuthProvider({ children }: Props) {
       signOut,
       updateProfile,
       confirmNewPhone,
+      decreaseUsage,
     ]
   );
 
