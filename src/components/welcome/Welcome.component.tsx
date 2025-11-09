@@ -33,8 +33,6 @@ export const Welcome = () => {
     trigger("phone");
   }, [trigger]);
 
-  console.log(countryCode);
-
   const { signInWithPhone } = useAuth();
   const { setToastErrorText } = useError();
   const navigate = useNavigate();

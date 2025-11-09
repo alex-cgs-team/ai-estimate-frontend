@@ -46,7 +46,6 @@ export const Progress = () => {
       });
       // @ts-expect-error TODO - rewrite all statuses and steps
       if (last && last.status === "failed") {
-        console.log("test");
         setError(true);
         setIsN8NError(true);
         decreaseUsage();
