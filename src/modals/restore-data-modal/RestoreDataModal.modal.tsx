@@ -38,14 +38,13 @@ export const RestoreDataModal = ({
       <div className="flex flex-col gap-8 mt-5">
         <p className="text-subtitle">{MODALS_TEXT.do_you_want_to_restore}</p>
         <div className="flex gap-2">
+          <Button title={TEXT.no} onClick={close} type="white" />
           <Button
             title={TEXT.yes}
             onClick={onRestore}
-            type="white"
             disabled={loading}
             isLoading={loading}
           />
-          <Button title={TEXT.no} onClick={close} />
         </div>
       </div>
     </Modal>

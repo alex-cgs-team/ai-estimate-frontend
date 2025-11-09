@@ -5,6 +5,7 @@ type Props = {
   label?: string;
   value: string;
   onChange: (val: string) => void;
+  onCountry?: (val: string) => void;
   placeholder?: string;
   disabled?: boolean;
   description?: string;
@@ -21,6 +22,7 @@ export function PhoneField({
   disabled,
   isError,
   errorMessage,
+  onCountry,
 }: Props) {
   return (
     <div className="w-full flex flex-col gap-2">
@@ -44,7 +46,12 @@ export function PhoneField({
         <div className="flex items-center w-full h-full">
           <PhoneInput
             value={value}
-            onChange={(val) => onChange(val ?? "")}
+            onChange={(val, meta) => {
+              if (onCountry && meta.country.dialCode) {
+                onCountry(meta.country.dialCode);
+              }
+              onChange(val ?? "");
+            }}
             placeholder={placeholder ?? "+1 (555) 123 4567"}
             className="w-full flex items-center h-full"
             inputClassName="w-full outline-none text-body h-full"

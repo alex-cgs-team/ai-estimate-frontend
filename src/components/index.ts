@@ -13,3 +13,4 @@ export { FileDropzone } from "./file-drop/FileDrop.component";
 export { FilesList } from "./files-list/FilesList.component";
 export { ModalPortal } from "./modal-portal/ModalPortal.component";
 export { Modal } from "./modal/Modal.component";
+export { ErrorWarning } from "./error-warning/ErrorWarning,component";
