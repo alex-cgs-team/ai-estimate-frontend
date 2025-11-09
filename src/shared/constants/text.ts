@@ -81,7 +81,7 @@ export const ERRORS_TEXT = Object.freeze({
   stripe_error: "Payment error",
   user_delete_error: "User delete error",
   profile_update_error: "Profile update error",
-  something_went_wrong: "😞 Oops! Something went wrong.",
+  something_went_wrong: "Something went wrong...",
   working_on_it:
     "We're already working to fix it. Please try again in a few moments.",
   restore_data_error: "Restore data was failed",
@@ -89,7 +89,8 @@ export const ERRORS_TEXT = Object.freeze({
 
 export const MODALS_TEXT = Object.freeze({
   free_limit: "Free limit reached",
-  used_all: " You’ve used all",
+  used_all:
+    "It seems that you have used all of your free estimates. Upgrade your plan to keep using the app!",
   free_estimations: "free estimations.",
   upgrade_stripe: "Upgrade on Stripe",
   maybe_later: "Maybe later",
@@ -98,7 +99,8 @@ export const MODALS_TEXT = Object.freeze({
   delete_account:
     "Deleting your account is permanent. You will no longer be able to create an account with this email.",
   restore_data: "Restore data",
-  do_you_want_to_restore: "Do you want to restore previous information?",
-  upgrade_plan: "Upgrade your plan on Stripe",
-  unlimited_access: "Get unlimited access to all AI Estimate features.",
+  do_you_want_to_restore:
+    "Are you sure you want to restore previous information?",
+  upgrade_plan: "Upgrade your plan",
+  unlimited_access: "And gain unlimited access to all AI Estimate features!",
 });

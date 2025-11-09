@@ -17,7 +17,6 @@ export default function AppLayout() {
       setLoading(false);
       if (u) {
         const snap = await get(ref(rtdb, `profiles/${u.uid}`));
-        console.log(snap.val());
         const profile = snap.val();
         setProfile(profile);
       }

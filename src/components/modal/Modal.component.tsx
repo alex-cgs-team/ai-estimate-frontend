@@ -14,10 +14,13 @@ export const Modal = ({ close, isVisible, children, title }: ModalProps) => {
   return (
     <ModalPortal onClose={close}>
       <div>
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center relative">
           <p className="text-title">{title}</p>
-          <button onClick={close} className="cursor-pointer">
-            <X size={24} color="#6b7280" />
+          <button
+            onClick={close}
+            className="cursor-pointer absolute right-0 top-[-6px]"
+          >
+            <X size={18} color="#6b7280" />
           </button>
         </div>
         {children}
