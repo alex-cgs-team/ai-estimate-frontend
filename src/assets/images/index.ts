@@ -7,3 +7,4 @@ export { default as LoadingPNG } from "./loading.png";
 export { default as UserProfilePNG } from "./user-profile.png";
 export { default as CreditIconPNG } from "./credit-icon.png";
 export { default as ChangePhonePNG } from "./change-phone.png";
+export { default as GlassPNG } from "../images/glass.png";

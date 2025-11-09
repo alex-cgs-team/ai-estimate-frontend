@@ -1,7 +1,7 @@
 import { NotebookPNG } from "@/assets/images";
 import { ArrowBack, Button, DropDown, Input } from "@/components";
 import { useAuth } from "@/hooks";
-import { TEXT } from "@/shared/constants/text";
+import { ERRORS_TEXT, TEXT } from "@/shared/constants/text";
 import { roles } from "@/shared/constants/variables";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,6 +9,7 @@ import { onboardingSchema } from "@/schemas/onboarding.schema";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/shared/constants/routes";
+import { toast } from "react-toastify";
 
 type FormValues = {
   name: string;
@@ -34,8 +35,8 @@ export const Onboarding = () => {
     try {
       await saveProfile({ name: data.name, role: data.role });
       navigate(ROUTES.allSet);
-    } catch (e) {
-      console.log(e);
+    } catch {
+      toast.error(ERRORS_TEXT.something_went_wrong);
     }
   };
 
@@ -95,7 +96,7 @@ export const Onboarding = () => {
         rightIcon={<ArrowRight size={16} color="white" />}
       />
       <div className="flex justify-center">
-        <p className="text-center text-subtitle">
+        <p className="text-center text-subtitle font-medium">
           {TEXT.by_clicking}{" "}
           <span className="text-purple-400 cursor-pointer">
             {TEXT.privacy_police}

@@ -3,18 +3,19 @@ import { PhoneField } from "../phone-input/PhoneInput.component";
 import { Button } from "../button/Button.component";
 import { ArrowRight } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth.hook";
-import { getNationalDigits } from "@/utils";
 import { useError } from "@/hooks";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/shared/constants/routes";
+import { isValidPhoneNumber } from "libphonenumber-js";
 
 type FormValues = {
   phone: string;
 };
 
 export const Welcome = () => {
+  const [countryCode, setCountryCode] = useState("");
   const {
     control,
     handleSubmit,
@@ -31,6 +32,8 @@ export const Welcome = () => {
   useEffect(() => {
     trigger("phone");
   }, [trigger]);
+
+  console.log(countryCode);
 
   const { signInWithPhone } = useAuth();
   const { setToastErrorText } = useError();
@@ -59,10 +62,9 @@ export const Welcome = () => {
         rules={{
           required: TEXT.phone_required,
           validate: (val: string) => {
-            if (!val) return true;
+            if (!val && !countryCode) return true;
 
-            const len = getNationalDigits(val || "").length;
-            return len === 10 || len === 9 || TEXT.invalid_phone;
+            return isValidPhoneNumber(val, { defaultCallingCode: countryCode });
           },
         }}
         render={({
@@ -75,6 +77,7 @@ export const Welcome = () => {
               onChange={onChange}
               label={TEXT.phone_number}
               isError={!!error && (isTouched || submitCount > 0)}
+              onCountry={setCountryCode}
             />
           );
         }}
