@@ -1,17 +1,20 @@
 import { ArrowBack, Button, DropDown, Input } from "@/components";
-import { useAuth, useModal } from "@/hooks";
+import { useAuth, useError, useModal } from "@/hooks";
 import { DeleteModal } from "@/modals";
 import { ROUTES } from "@/shared/constants/routes";
 import { ERRORS_TEXT, TEXT } from "@/shared/constants/text";
 import { roleLabels, roles } from "@/shared/constants/variables";
+import { showToast } from "@/utils";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 
 const NameEdit = ({ close }: { close: () => void }) => {
   const { profile, user, updateProfile } = useAuth();
   const [name, setName] = useState(profile ? profile.name : "");
   const [loading, setLoading] = useState(false);
+
+  const { setToastErrorText } = useError();
+
   if (!user) {
     return null;
   }
@@ -20,10 +23,13 @@ const NameEdit = ({ close }: { close: () => void }) => {
     setLoading(true);
     try {
       await updateProfile({ name });
-      toast.success(TEXT.profile_updated);
+      showToast({
+        type: "success",
+        text: TEXT.profile_updated,
+      });
       close();
     } catch {
-      toast.error(ERRORS_TEXT.profile_update_error);
+      setToastErrorText(ERRORS_TEXT.profile_update_error);
     } finally {
       setLoading(false);
     }
@@ -49,6 +55,9 @@ const RoleEdit = ({ close }: { close: () => void }) => {
   const { profile, user, updateProfile } = useAuth();
   const [role, setRole] = useState(profile ? profile.role : "");
   const [loading, setLoading] = useState(false);
+
+  const { setToastErrorText } = useError();
+
   if (!user) {
     return null;
   }
@@ -57,10 +66,13 @@ const RoleEdit = ({ close }: { close: () => void }) => {
     setLoading(true);
     try {
       await updateProfile({ role });
-      toast.success(TEXT.profile_updated);
+      showToast({
+        type: "success",
+        text: TEXT.profile_updated,
+      });
       close();
     } catch {
-      toast.error(ERRORS_TEXT.profile_update_error);
+      setToastErrorText(ERRORS_TEXT.profile_update_error);
     } finally {
       setLoading(false);
     }

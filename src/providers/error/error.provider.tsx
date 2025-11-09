@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { toast } from "react-toastify";
 import { ErrorContext } from "./error.context";
+import { showToast } from "@/utils";
 
 export type ErrorContextType = {
   setToastErrorText: (text: string) => void;
@@ -16,7 +16,10 @@ export const ErrorProvider = ({ children }: ErrorProps) => {
 
   useEffect(() => {
     if (toastErrorText) {
-      toast.error(toastErrorText);
+      showToast({
+        type: "error",
+        text: toastErrorText,
+      });
       setToastErrorText("");
     }
   }, [toastErrorText]);

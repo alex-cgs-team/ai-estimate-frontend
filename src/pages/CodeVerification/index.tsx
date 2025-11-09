@@ -3,10 +3,10 @@ import { ArrowBack, OTPCode } from "@/components";
 import { useAuth, useError } from "@/hooks";
 import { ROUTES } from "@/shared/constants/routes";
 import { ERRORS_TEXT, TEXT } from "@/shared/constants/text";
+import { showToast } from "@/utils";
 import { Edit3Icon, Loader2 } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 
 export const CodeVerification = () => {
   const [code, setCode] = useState("");
@@ -39,7 +39,10 @@ export const CodeVerification = () => {
   const handleVerifyChangePhone = useCallback(
     async (otp: string) => {
       await confirmNewPhone(otp);
-      toast.success(TEXT.phone_changed_success);
+      showToast({
+        type: "success",
+        text: TEXT.phone_changed_success,
+      });
       navigate(ROUTES.profile ?? "/profile");
     },
     [confirmNewPhone, navigate]
@@ -54,7 +57,7 @@ export const CodeVerification = () => {
         await handleVerifyLogin(otp);
       }
     } catch {
-      toast.error(ERRORS_TEXT.invalid_code);
+      setToastErrorText(ERRORS_TEXT.invalid_code);
       setIsWrongCode(true);
       setCode("");
     } finally {
@@ -79,7 +82,10 @@ export const CodeVerification = () => {
     setLoading(true);
     try {
       await signInWithPhone(phone);
-      toast.success(TEXT.code_sent_again);
+      showToast({
+        type: "success",
+        text: TEXT.code_sent_again,
+      });
     } catch {
       setToastErrorText(ERRORS_TEXT.send_code_error);
     } finally {

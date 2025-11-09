@@ -64,6 +64,28 @@ app.get("/healthz", async (req, res) => {
   }
 });
 
+app.post("/account/disable", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization || "";
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+    if (!token) return res.status(401).send("Missing token");
+
+    const decoded = await admin.auth().verifyIdToken(token, true);
+    const uid = decoded.uid;
+
+    const now = Math.floor(Date.now() / 1000);
+    if (decoded.auth_time && now - decoded.auth_time > 5 * 60) {
+      return res.status(403).send("Re-auth required");
+    }
+
+    await admin.auth().updateUser(uid, { disabled: true });
+    await admin.auth().revokeRefreshTokens(uid);
+    res.send({ success: true });
+  } catch (err) {
+    res.status(400).send(e?.message || "Failed");
+  }
+});
+
 // 9) Эндпоинт для записи операции в estimates
 app.post("/progress", express.json(), async (req, res) => {
   const { uid, executionId, operation } = req.body;

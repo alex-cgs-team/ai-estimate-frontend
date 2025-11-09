@@ -1,22 +1,24 @@
+import { disableAccount } from "@/api/user/user.api";
 import { Modal } from "@/components";
 import { auth } from "@/firebase";
+import { useError } from "@/hooks";
 import { ERRORS_TEXT, MODALS_TEXT, TEXT } from "@/shared/constants/text";
 import type { UseModalReturn } from "@/types/types";
-import { deleteUser } from "firebase/auth";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
-import { toast } from "react-toastify";
 
 export const DeleteModal = ({ close, isVisible, toggle }: UseModalReturn) => {
   const [loading, setLoading] = useState(false);
+  const { setToastErrorText } = useError();
   const deleteAccount = async () => {
     setLoading(true);
     const user = auth.currentUser;
     if (!user) return;
     try {
-      await deleteUser(user);
+      await disableAccount();
+      await auth.signOut();
     } catch {
-      toast.error(ERRORS_TEXT.user_delete_error);
+      setToastErrorText(ERRORS_TEXT.user_delete_error);
     } finally {
       setLoading(false);
       close();
