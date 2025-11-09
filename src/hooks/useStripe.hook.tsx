@@ -5,13 +5,14 @@ import {
 } from "@/shared/constants/env";
 import { ERRORS_TEXT } from "@/shared/constants/text";
 import { loadStripe } from "@stripe/stripe-js";
-import { toast } from "react-toastify";
 import { useAuth } from "./useAuth.hook";
 import { useState } from "react";
+import { useError } from "./useError.hook";
 
 export const useStripe = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const { setToastErrorText } = useError();
 
   const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
   const goToCheckout = async () => {
@@ -39,7 +40,7 @@ export const useStripe = () => {
       const { error } = await stripe.redirectToCheckout({ sessionId });
       if (error) console.error("Stripe Checkout error:", error.message);
     } catch {
-      toast.error(ERRORS_TEXT.stripe_error);
+      setToastErrorText(ERRORS_TEXT.stripe_error);
     } finally {
       setLoading(false);
     }

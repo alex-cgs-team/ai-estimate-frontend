@@ -14,3 +14,4 @@ export { FilesList } from "./files-list/FilesList.component";
 export { ModalPortal } from "./modal-portal/ModalPortal.component";
 export { Modal } from "./modal/Modal.component";
 export { ErrorWarning } from "./error-warning/ErrorWarning,component";
+export { Toast } from "./toast/Toast.component";

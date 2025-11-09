@@ -1,8 +1,8 @@
 import { Button, Modal } from "@/components";
+import { useError } from "@/hooks";
 import { ERRORS_TEXT, MODALS_TEXT, TEXT } from "@/shared/constants/text";
 import type { UseModalReturn } from "@/types/types";
 import { useState } from "react";
-import { toast } from "react-toastify";
 
 type RestoreModalProps = {
   restore: () => Promise<void>;
@@ -16,12 +16,14 @@ export const RestoreDataModal = ({
 }: UseModalReturn & RestoreModalProps) => {
   const [loading, setLoading] = useState(false);
 
+  const { setToastErrorText } = useError();
+
   const onRestore = async () => {
     setLoading(true);
     try {
       await restore();
     } catch {
-      toast.error(ERRORS_TEXT.restore_data_error);
+      setToastErrorText(ERRORS_TEXT.restore_data_error);
     } finally {
       setLoading(false);
       close();
