@@ -5,10 +5,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth, useError } from "@/hooks";
 import { LoadingPNG } from "@/assets/images";
 import { ERRORS_TEXT, TEXT } from "@/shared/constants/text";
-import { toast } from "react-toastify";
 import { ArrowBack, Button, ErrorWarning } from "@/components";
 import { ArrowRight } from "lucide-react";
 import { ROUTES } from "@/shared/constants/routes";
+import { showToast } from "@/utils";
 
 type Step = { step: string; status?: string; progress?: number };
 
@@ -20,7 +20,7 @@ export const Progress = () => {
   const [error, setError] = useState(false);
 
   const { user, decreaseUsage } = useAuth();
-  const { setIsN8NError } = useError();
+  const { setIsN8NError, setToastErrorText } = useError();
 
   const navigate = useNavigate();
 
@@ -46,7 +46,6 @@ export const Progress = () => {
       });
       // @ts-expect-error TODO - rewrite all statuses and steps
       if (last && last.status === "failed") {
-        console.log("test");
         setError(true);
         setIsN8NError(true);
         decreaseUsage();
@@ -70,9 +69,12 @@ export const Progress = () => {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(link);
-      toast.success(TEXT.link_was_copied);
+      showToast({
+        type: "success",
+        text: TEXT.link_was_copied,
+      });
     } catch {
-      toast.error(ERRORS_TEXT.copy_error);
+      setToastErrorText(ERRORS_TEXT.copy_error);
     }
   };
 

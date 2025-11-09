@@ -1,6 +1,6 @@
 import { NotebookPNG } from "@/assets/images";
 import { ArrowBack, Button, DropDown, Input } from "@/components";
-import { useAuth } from "@/hooks";
+import { useAuth, useError } from "@/hooks";
 import { ERRORS_TEXT, TEXT } from "@/shared/constants/text";
 import { roles } from "@/shared/constants/variables";
 import { Controller, useForm } from "react-hook-form";
@@ -9,7 +9,6 @@ import { onboardingSchema } from "@/schemas/onboarding.schema";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/shared/constants/routes";
-import { toast } from "react-toastify";
 
 type FormValues = {
   name: string;
@@ -31,12 +30,14 @@ export const Onboarding = () => {
 
   const navigate = useNavigate();
 
+  const { setToastErrorText } = useError();
+
   const onSubmit = async (data: FormValues) => {
     try {
       await saveProfile({ name: data.name, role: data.role });
       navigate(ROUTES.allSet);
     } catch {
-      toast.error(ERRORS_TEXT.something_went_wrong);
+      setToastErrorText(ERRORS_TEXT.something_went_wrong);
     }
   };
 
