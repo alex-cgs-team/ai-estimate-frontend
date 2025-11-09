@@ -1,9 +1,7 @@
-import { Modal } from "@/components";
+import { Button, Modal } from "@/components";
 import { useStripe } from "@/hooks";
-import { FREE_LIMIT } from "@/shared/config/config";
 import { MODALS_TEXT } from "@/shared/constants/text";
 import type { UseModalReturn } from "@/types/types";
-import { Loader2 } from "lucide-react";
 
 export const LimitModal = ({ close, isVisible, toggle }: UseModalReturn) => {
   const { goToCheckout, loading } = useStripe();
@@ -16,29 +14,17 @@ export const LimitModal = ({ close, isVisible, toggle }: UseModalReturn) => {
       title={MODALS_TEXT.free_limit}
     >
       <h3 className="text-lg font-semibold mb-2"></h3>
-      <p className="text-subtitle text-gray-600">
-        {MODALS_TEXT.used_all} {FREE_LIMIT} {MODALS_TEXT.free_estimations}
-      </p>
+      <p className="text-subtitle text-gray-600">{MODALS_TEXT.used_all}</p>
 
       <div className="mt-5 space-y-3">
-        <button
+        <Button
           disabled={loading}
           onClick={goToCheckout}
-          className="w-full rounded-xl bg-[#6E56CF] hover:opacity-90 text-white font-medium py-3 cursor-pointer flex items-center justify-center"
-        >
-          {loading ? (
-            <Loader2 size={24} color="white" className="animate-spin" />
-          ) : (
-            <p>{MODALS_TEXT.upgrade_stripe}</p>
-          )}
-        </button>
+          title={MODALS_TEXT.upgrade_stripe}
+          isLoading={loading}
+        />
 
-        <button
-          onClick={close}
-          className="w-full rounded-xl border border-[#E5E7F0] bg-white hover:bg-[#F6F8FE] text-gray-700 font-medium py-3 cursor-pointer"
-        >
-          {MODALS_TEXT.maybe_later}
-        </button>
+        <Button onClick={close} title={MODALS_TEXT.maybe_later} type="white" />
       </div>
     </Modal>
   );
