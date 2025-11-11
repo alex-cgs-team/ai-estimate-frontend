@@ -6,6 +6,7 @@ type Props = {
   type?: string;
   disabled?: boolean;
   error?: string | null;
+  maxLength?: number;
 };
 
 export const Input = ({
@@ -15,18 +16,27 @@ export const Input = ({
   placeholder = "",
   disabled = false,
   error,
+  maxLength,
 }: Props) => {
   return (
     <div className="flex flex-col gap-1 w-full">
-      {label && (
-        <label className="text-sm font-medium text-gray-700">{label}</label>
-      )}
+      <div className="flex justify-between">
+        {label && (
+          <label className="text-sm font-medium text-gray-700">{label}</label>
+        )}
+        {maxLength && value && (
+          <label className="text-subtitle">
+            {value.length}/{maxLength}
+          </label>
+        )}
+      </div>
 
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         disabled={disabled}
+        maxLength={maxLength}
         className={`
           w-full h-[42px] rounded-xl border px-3 py-2 text-sm outline-none
           bg-white text-gray-900 placeholder:text-gray-400
