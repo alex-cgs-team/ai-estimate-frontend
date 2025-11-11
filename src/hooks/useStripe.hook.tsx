@@ -1,20 +1,19 @@
 import {
-  STRIPE_PUBLISHABLE_KEY,
   API_BASE,
   STRIPE_PRICE_ID,
 } from "@/shared/constants/env";
 import { ERRORS_TEXT } from "@/shared/constants/text";
-import { loadStripe } from "@stripe/stripe-js";
 import { useAuth } from "./useAuth.hook";
 import { useState } from "react";
 import { useError } from "./useError.hook";
+import { stripePromise } from "@/shared/config/config";
 
 export const useStripe = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const { setToastErrorText } = useError();
 
-  const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
+ 
   const goToCheckout = async () => {
     setLoading(true);
     if (!user) {
