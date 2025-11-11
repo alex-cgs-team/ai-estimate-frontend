@@ -4,6 +4,8 @@ import { ERRORS_TEXT, TEXT } from "@/shared/constants/text";
 import {
   ACCEPT_FILES,
   FREE_LIMIT,
+  NOTES_TO_AI_LIMIT,
+  PROJECT_NAME_LIMIT,
   TEXT_FILES_LIMIT,
   VISUAL_FILES_LIMIT,
 } from "@/shared/config/config";
@@ -187,6 +189,7 @@ export const Main = () => {
             onChange={setProjectName}
             label={TEXT.project_name}
             placeholder={TEXT.enter_project_name}
+            maxLength={PROJECT_NAME_LIMIT}
           />
 
           <TextArea
@@ -195,6 +198,7 @@ export const Main = () => {
             label={TEXT.notes_to_ai}
             placeholder={TEXT.enter_notes_ai}
             rows={10}
+            maxLength={NOTES_TO_AI_LIMIT}
           />
 
           <FileDropzone

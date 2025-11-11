@@ -6,6 +6,7 @@ type Props = {
   disabled?: boolean;
   error?: string | null;
   rows?: number;
+  maxLength?: number;
 };
 
 export const TextArea = ({
@@ -16,12 +17,20 @@ export const TextArea = ({
   disabled = false,
   error,
   rows = 4,
+  maxLength,
 }: Props) => {
   return (
     <div className="flex flex-col gap-1 w-full">
-      {label && (
-        <label className="text-sm font-medium text-gray-700">{label}</label>
-      )}
+      <div className="flex justify-between">
+        {label && (
+          <label className="text-sm font-medium text-gray-700">{label}</label>
+        )}
+        {maxLength && value && (
+          <label className="text-subtitle">
+            {value.length}/{maxLength}
+          </label>
+        )}
+      </div>
 
       <textarea
         value={value}
@@ -29,6 +38,7 @@ export const TextArea = ({
         placeholder={placeholder}
         disabled={disabled}
         rows={rows}
+        maxLength={maxLength}
         className={`
           w-full rounded-xl border px-3 py-2 text-sm
           bg-white text-gray-900 placeholder:text-gray-400 outline-none
