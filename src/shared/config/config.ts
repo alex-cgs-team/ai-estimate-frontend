@@ -7,4 +7,5 @@ export const ACCEPT_FILES = {
   "application/pdf": [],
   "application/msword": [],
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [],
+  "text/csv": [],
 };
