@@ -38,7 +38,7 @@ export function FileDropzone({
             setToastErrorText(TEXT.img_files_limit);
             return;
           }
-        } else if (ext === "pdf") {
+        } else if (["pdf", "csv"].includes(ext)) {
           if (textDisabled) {
             isLimit = true;
             setToastErrorText(TEXT.text_files_limit);
