@@ -1,92 +1,146 @@
-import { ERRORS_TEXT, TEXT } from "@/shared/constants/text";
-import { PhoneField } from "../phone-input/PhoneInput.component";
-import { Button } from "../button/Button.component";
-import { ArrowRight } from "lucide-react";
-import { useForm, Controller } from "react-hook-form";
-import { useEffect, useState } from "react";
-import { useAuth } from "@/hooks/useAuth.hook";
+import { auth, rtdb } from "@/firebase";
 import { useError } from "@/hooks";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth.hook";
+import { signInSchema, type SignInFormType } from "@/schemas/onboarding.schema";
 import { ROUTES } from "@/shared/constants/routes";
-import { isValidPhoneNumber } from "libphonenumber-js";
-
-type FormValues = {
-  phone: string;
-};
+import { ERRORS_TEXT, TEXT } from "@/shared/constants/text";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { get, ref } from "firebase/database";
+import { ArrowRight } from "lucide-react";
+import { Controller, useForm } from "react-hook-form";
+import { Link, useNavigate } from "react-router-dom";
+import { Button } from "../button/Button.component";
+import { Input } from "../input/Input.component";
 
 export const Welcome = () => {
-  const [countryCode, setCountryCode] = useState("");
   const {
     control,
     handleSubmit,
-    formState: { isValid, isDirty, isSubmitting, submitCount },
-    trigger,
-    setError,
-    resetField,
-    setFocus,
-  } = useForm<FormValues>({
+    formState: { errors, isSubmitting, isValid, isDirty },
+  } = useForm<SignInFormType>({
     mode: "onChange",
-    defaultValues: { phone: "" },
+    resolver: zodResolver(signInSchema),
+    defaultValues: { email: "", password: "" },
   });
 
-  useEffect(() => {
-    trigger("phone");
-  }, [trigger]);
-
-  const { signInWithPhone } = useAuth();
+  const { signInWithEmailPassword, resendVerifyEmail, signInWithGoogle } =
+    useAuth();
   const { setToastErrorText } = useError();
   const navigate = useNavigate();
 
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: SignInFormType) => {
     try {
-      await signInWithPhone(data.phone);
-      navigate(ROUTES.codeVerification, { state: { phone: data.phone } });
-    } catch {
-      setToastErrorText(ERRORS_TEXT.send_code_error);
-      setError("phone", {
-        type: "manual",
-        message: ERRORS_TEXT.send_code_error,
+      const user = await signInWithEmailPassword({
+        email: data.email,
+        password: data.password,
       });
-      resetField("phone", { defaultValue: "" });
-      setFocus("phone");
+
+      if (user.emailVerified) {
+        const snap = await get(ref(rtdb, `profiles/${user.uid}`));
+        if (snap.val()) {
+          navigate(ROUTES.main);
+        } else {
+          navigate(ROUTES.onboarding);
+        }
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === "Email didn't verified") {
+          if (auth.currentUser) {
+            try {
+              await resendVerifyEmail(auth.currentUser);
+            } catch {
+              setToastErrorText(ERRORS_TEXT.something_went_wrong);
+            }
+          }
+          setToastErrorText(ERRORS_TEXT.email_not_verified);
+        } else {
+          setToastErrorText(ERRORS_TEXT.invalid_credentials);
+        }
+      } else {
+        setToastErrorText(ERRORS_TEXT.invalid_credentials);
+      }
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const user = await signInWithGoogle();
+      const snap = await get(ref(rtdb, `profiles/${user.uid}`));
+      if (snap.val()) {
+        navigate(ROUTES.main);
+      } else {
+        navigate(ROUTES.onboarding);
+      }
+    } catch {
+      setToastErrorText(ERRORS_TEXT.something_went_wrong);
     }
   };
 
   return (
     <>
-      <Controller
-        control={control}
-        name="phone"
-        rules={{
-          required: TEXT.phone_required,
-          validate: (val: string) => {
-            if (!val && !countryCode) return true;
+      <div className="w-full flex flex-col gap-2">
+        <Controller
+          control={control}
+          name="email"
+          render={({ field: { value, onChange } }) => (
+            <>
+              <Input
+                value={value}
+                onChange={onChange}
+                label={TEXT.email}
+                placeholder={TEXT.enter_email}
+                error={errors.email?.message}
+                type="email"
+              />
+            </>
+          )}
+        />
+        <Controller
+          control={control}
+          name="password"
+          render={({ field: { value, onChange } }) => (
+            <>
+              <Input
+                value={value}
+                onChange={onChange}
+                label={TEXT.password}
+                placeholder={TEXT.enter_password}
+                error={errors.password?.message}
+                type="password"
+              />
 
-            return isValidPhoneNumber(val, { defaultCallingCode: countryCode });
-          },
-        }}
-        render={({
-          field: { value, onChange },
-          fieldState: { error, isTouched },
-        }) => {
-          return (
-            <PhoneField
-              value={value}
-              onChange={onChange}
-              label={TEXT.phone_number}
-              isError={!!error && (isTouched || submitCount > 0)}
-              onCountry={setCountryCode}
-            />
-          );
-        }}
-      />
+              <Link
+                className="text-subtitle cursor-pointer"
+                to={ROUTES.forgorPassword}
+              >
+                {TEXT.forgot_password}
+              </Link>
+            </>
+          )}
+        />
+      </div>
       <Button
-        title={TEXT.start}
-        rightIcon={<ArrowRight size={16} color="white" />}
+        title={TEXT.log_in}
+        rightIcon={<ArrowRight size={16} color="#5A4886" />}
         onClick={handleSubmit(onSubmit)}
         disabled={!(isDirty && isValid)}
         isLoading={isSubmitting}
       />
+      <Button
+        title={TEXT.log_in_with_google}
+        rightIcon={<ArrowRight size={16} color="#5A4886" />}
+        onClick={handleGoogleSignIn}
+      />
+      <div className="flex justify-center gap-1">
+        <p className="text-subtitle">{TEXT.new_to_ai}</p>
+        <Link
+          className="text-subtitle text-[#A36FD1] font-medium"
+          to={ROUTES.signUp}
+        >
+          {TEXT.sign_up}
+        </Link>
+      </div>
     </>
   );
 };

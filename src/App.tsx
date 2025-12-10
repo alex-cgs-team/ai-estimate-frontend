@@ -1,8 +1,8 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { ProtectedRoute } from "./components";
 import AppLayout from "./layout";
 import { Providers } from "./providers/providers";
 import { ROUTE_ELEMENT, ROUTES } from "./shared/constants/routes";
-import { ProtectedRoute } from "./components";
 
 export default function App() {
   return (
@@ -11,6 +11,7 @@ export default function App() {
         <Routes>
           <Route element={<AppLayout />}>
             <Route path={ROUTES.welcome} element={ROUTE_ELEMENT.welcome} />
+            <Route path={ROUTES.signUp} element={ROUTE_ELEMENT.signUp} />
             <Route
               path={ROUTES.codeVerification}
               element={ROUTE_ELEMENT.codeVerification}
@@ -23,6 +24,15 @@ export default function App() {
               path={ROUTES.termsOfUse}
               element={ROUTE_ELEMENT.termsOfUse}
             />
+            <Route
+              path={ROUTES.confirmEmail}
+              element={ROUTE_ELEMENT.confirmEmail}
+            />
+            <Route
+              path={ROUTES.forgorPassword}
+              element={ROUTE_ELEMENT.forgorPassword}
+            />
+            <Route path={ROUTES.sentEmail} element={ROUTE_ELEMENT.sentEmail} />
             <Route element={<ProtectedRoute redirectTo={ROUTES.welcome} />}>
               <Route
                 path={ROUTES.onboarding}
@@ -35,6 +45,10 @@ export default function App() {
               <Route
                 path={ROUTES.changePhone}
                 element={ROUTE_ELEMENT.changePhone}
+              />
+              <Route
+                path={ROUTES.changeEmail}
+                element={ROUTE_ELEMENT.changeEmail}
               />
             </Route>
           </Route>
