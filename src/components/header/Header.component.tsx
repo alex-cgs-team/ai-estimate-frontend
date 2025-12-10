@@ -40,7 +40,7 @@ export default function Header() {
   const isUnlimited =
     profile?.usage?.paid && profile?.usage?.status === "active";
 
-  if (!user) {
+  if (!user || !profile) {
     return (
       <header className="px-5 shadow-sm h-12 flex items-center justify-between">
         <Logo />
@@ -86,8 +86,8 @@ export default function Header() {
             >
               <div className="px-3 py-2">
                 <p className="text-sm font-medium">{profile?.name}</p>
-                {user.phoneNumber && (
-                  <p className="text-body text-gray-500">{user.phoneNumber}</p>
+                {user.email && (
+                  <p className="text-body text-gray-500">{user.email}</p>
                 )}
               </div>
 

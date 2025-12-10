@@ -96,7 +96,9 @@ const RoleEdit = ({ close }: { close: () => void }) => {
 };
 
 export const Profile = () => {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, isGoogleProvider } = useAuth();
+
+  const isGoogle = isGoogleProvider();
 
   const navigate = useNavigate();
 
@@ -107,10 +109,10 @@ export const Profile = () => {
   const info = user
     ? [
         {
-          key: "phone",
-          title: TEXT.phone_number,
-          value: user.phoneNumber,
-          onEditClick: () => navigate(ROUTES.changePhone),
+          key: "email",
+          title: TEXT.email,
+          value: user.email,
+          onEditClick: () => navigate(ROUTES.changeEmail),
           EditComponent: null,
         },
         {
@@ -138,26 +140,31 @@ export const Profile = () => {
             <p className="text-title">{TEXT.personal_info}</p>
           </div>
           <div className="mt-5 px-4 grid grid-cols-[180px_300px_1fr] gap-y-6 items-center">
-            {info.map((item) => (
-              <div key={item.title} className="contents">
-                <p className="text-gray-500 text-subtitle">{item.title}</p>
-                {activeEdit === item.key && item.EditComponent ? (
-                  <div>{item.EditComponent}</div>
-                ) : (
-                  <p className="text-body">
-                    {item.value ? item.value : TEXT.not_specified}
-                  </p>
-                )}
-                <div className="w-full flex justify-end">
-                  <button
-                    className="text-body text-[#9b5cf6] cursor-pointer"
-                    onClick={item.onEditClick}
-                  >
-                    {TEXT.edit}
-                  </button>
+            {info.map((item) => {
+              if (item.key === "email" && isGoogle) {
+                return null;
+              }
+              return (
+                <div key={item.title} className="contents">
+                  <p className="text-gray-500 text-subtitle">{item.title}</p>
+                  {activeEdit === item.key && item.EditComponent ? (
+                    <div>{item.EditComponent}</div>
+                  ) : (
+                    <p className="text-body">
+                      {item.value ? item.value : TEXT.not_specified}
+                    </p>
+                  )}
+                  <div className="w-full flex justify-end">
+                    <button
+                      className="text-body text-[#9b5cf6] cursor-pointer"
+                      onClick={item.onEditClick}
+                    >
+                      {TEXT.edit}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
         <div className="mt-9">
