@@ -7,3 +7,20 @@ export const onboardingSchema = z.object({
 });
 
 export type OnboardingFormType = z.infer<typeof onboardingSchema>;
+
+export const signInSchema = z.object({
+  email: z.email("Invalid email address"),
+  password: z.string().min(6, "At least 6 characters"),
+});
+
+export const signUpSchema = signInSchema
+  .extend({
+    confirmPassword: z.string().min(6, "At least 6 characters"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
+
+export type SignInFormType = z.infer<typeof signInSchema>;
+export type SignUpFormType = z.infer<typeof signUpSchema>;
