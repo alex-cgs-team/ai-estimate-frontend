@@ -1,11 +1,11 @@
-import { Outlet } from "react-router-dom";
-import { Footer, Header } from "./components";
-import { ToastContainer } from "react-toastify";
 import { onAuthStateChanged } from "firebase/auth";
-import { useState, useEffect } from "react";
+import { get, ref } from "firebase/database";
+import { useEffect, useState } from "react";
+import { Outlet } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import { Footer, Header } from "./components";
 import { auth, rtdb } from "./firebase";
 import { useAuth } from "./hooks";
-import { get, ref } from "firebase/database";
 
 export default function AppLayout() {
   const { setUser, setProfile } = useAuth();
@@ -13,13 +13,15 @@ export default function AppLayout() {
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
-      setUser(u ?? null);
-      setLoading(false);
-      if (u) {
+      if (u && u?.emailVerified) {
         const snap = await get(ref(rtdb, `profiles/${u.uid}`));
         const profile = snap.val();
-        setProfile(profile);
+        if (u && profile) {
+          setUser(u);
+          setProfile(profile);
+        }
       }
+      setLoading(false);
     });
     return unsub;
   }, [setUser, setProfile]);

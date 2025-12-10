@@ -4,18 +4,24 @@ export const TEXT = Object.freeze({
   privacy_police: "Privacy policy",
   terms_of_use: "Terms of use",
   welcome: "Welcome to AI estimate",
+  change: "Change",
   elevate: "Elevate your business experience with AI",
   phone_number: "Phone number",
   log_in: "Log In",
+  log_in_with_google: "Log in with google",
   new_to_ai: "New to AI estimate?",
   sign_up: "Sign Up",
   phone_required: "Phone field is required",
   invalid_phone: "Invalid phone number",
   start: "Start",
   check_out_phone: "Check out your phone",
+  check_out_email: "Check out your email",
   we_have_sent_code: "We’ve sent a code to your phone number: ",
+  we_have_sent_link: "We’ve sent a link to your email: ",
   did_not_get_code: "Didn’t get your code?",
+  did_not_get_email: "Didn’t get your email?",
   resend_code: "Resend code",
+  resend_email: "Resend email",
   wrong_code: "The code is not valid",
   tell_us: "Tell us about yourself",
   your_name: "Your name",
@@ -62,6 +68,7 @@ export const TEXT = Object.freeze({
   save: "Save",
   profile_updated: "Profile was updated",
   change_phone: "Change your phone number",
+  change_email: "Change your email",
   new_phone: "New phone number",
   get_code: "Get the code",
   code_sent_again: "Code send again",
@@ -71,6 +78,22 @@ export const TEXT = Object.freeze({
   no: "No",
   not_specified: "Not specified",
   we_wont_deduct: "We won’t deduct your attempt for this operation.",
+  email: "Email",
+  enter_email: "Enter your Email",
+  password: "Password",
+  enter_password: "Enter your Password",
+  confirm_password: "Confirm Password",
+  create_your_account: "Create your account and start the journey",
+  verify_email_before_sign_in:
+    "Verification link sent. Please verify your email to sign in.",
+  new_email: "New Email",
+  enter_new_email: "Enter new email",
+  current_password: "Current Password",
+  enter_current_password: "Enter current password",
+  email_verified_success: "Email verified successfully! You can now log in.",
+  email_changed_success:
+    "Email address updated successfully. Please log in with your new email.",
+  forgot_password: "Forgot Password?",
 });
 
 export const ERRORS_TEXT = Object.freeze({
@@ -85,6 +108,10 @@ export const ERRORS_TEXT = Object.freeze({
   working_on_it:
     "We're already working to fix it. Please try again in a few moments.",
   restore_data_error: "Restore data was failed",
+  invalid_credentials: "Invalid credentials",
+  passwords_do_not_match: "Passwords do not match",
+  email_not_verified: "Your email is not verified. Please check your inbox.",
+  email_already_in_use: "User with this email already exists",
 });
 
 export const MODALS_TEXT = Object.freeze({

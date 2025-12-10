@@ -1,12 +1,18 @@
 import {
   AllSet,
+  ChangeEmail,
+  ChangePassword,
   ChangeProfile,
   CodeVerification,
+  ConfirmEmail,
+  ForgotPassword,
   Main,
   Onboarding,
   PrivacyPolice,
   Profile,
   Progress,
+  SentEmail,
+  SignUp,
   TermsOfUse,
   WelcomePage,
 } from "@/pages";
@@ -23,6 +29,12 @@ export const ROUTES = {
   changePhone: "/change-profile",
   termsOfUse: "/terms-of-use",
   privacyPolice: "/privacy-police",
+  signUp: "/sign-up",
+  confirmEmail: "/confirm-email",
+  changeEmail: "/change-email",
+  sentEmail: "/sent-email",
+  forgorPassword: "/forgot-password",
+  changePassword: "/change-password",
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;
@@ -40,4 +52,10 @@ export const ROUTE_ELEMENT: Record<RouteKey, ReactElement> = {
   changePhone: <ChangeProfile />,
   privacyPolice: <PrivacyPolice />,
   termsOfUse: <TermsOfUse />,
+  signUp: <SignUp />,
+  confirmEmail: <ConfirmEmail />,
+  changeEmail: <ChangeEmail />,
+  sentEmail: <SentEmail />,
+  forgorPassword: <ForgotPassword />,
+  changePassword: <ChangePassword />,
 };

@@ -31,13 +31,15 @@
 //     // @ts-ignore
 //     window.auth = auth;
 //   }
-  
-// src/firebase.ts
-import { initializeApp } from 'firebase/app'
-import { getAuth } from 'firebase/auth'
-import { getDatabase } from 'firebase/database'
 
-const DB_URL = import.meta.env.VITE_FIREBASE_DB_URL || 'https://project-ai-estimate-default-rtdb.firebaseio.com'
+// src/firebase.ts
+import { initializeApp } from "firebase/app";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getDatabase } from "firebase/database";
+
+const DB_URL =
+  import.meta.env.VITE_FIREBASE_DB_URL ||
+  "https://project-ai-estimate-default-rtdb.firebaseio.com";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -49,14 +51,14 @@ const firebaseConfig = {
   databaseURL: import.meta.env.VITE_FIREBASE_DB_URL,
 };
 
-const app = initializeApp(firebaseConfig)
-export const auth = getAuth(app)
-export const rtdb = getDatabase(app, DB_URL) // ← и вот тут
-
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
+export const rtdb = getDatabase(app, DB_URL); // ← и вот тут
 
 // пробросим auth в window только в dev
 if (import.meta.env.DEV) {
   // @ts-ignore
-  (window as any).auth = auth
+  (window as any).auth = auth;
 }
 // остальное оставь как есть
