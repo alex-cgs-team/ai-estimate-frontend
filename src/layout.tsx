@@ -28,7 +28,7 @@ export default function AppLayout() {
 
   if (loading) return null;
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[#FEFBFF]">
       <Header />
       <main className="flex-1">
         <Outlet />

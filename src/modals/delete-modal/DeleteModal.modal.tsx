@@ -1,22 +1,28 @@
 import { disableAccount } from "@/api/user/user.api";
 import { Modal } from "@/components";
 import { auth } from "@/firebase";
-import { useError } from "@/hooks";
+import { useAuth, useError } from "@/hooks";
+import { ROUTES } from "@/shared/constants/routes";
 import { ERRORS_TEXT, MODALS_TEXT, TEXT } from "@/shared/constants/text";
 import type { UseModalReturn } from "@/types/types";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const DeleteModal = ({ close, isVisible, toggle }: UseModalReturn) => {
   const [loading, setLoading] = useState(false);
+
+  const { signOut } = useAuth();
   const { setToastErrorText } = useError();
+  const navigate = useNavigate();
   const deleteAccount = async () => {
     setLoading(true);
     const user = auth.currentUser;
     if (!user) return;
     try {
       await disableAccount();
-      await auth.signOut();
+      await signOut();
+      navigate(ROUTES.welcome);
     } catch {
       setToastErrorText(ERRORS_TEXT.user_delete_error);
     } finally {

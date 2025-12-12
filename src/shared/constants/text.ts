@@ -7,8 +7,9 @@ export const TEXT = Object.freeze({
   change: "Change",
   elevate: "Elevate your business experience with AI",
   phone_number: "Phone number",
-  log_in: "Log In",
-  log_in_with_google: "Log in with google",
+  log_in: "Continue with Email",
+  log_in_with_google: "Continue with Google",
+  create: "Create your account",
   new_to_ai: "New to AI estimate?",
   sign_up: "Sign Up",
   phone_required: "Phone field is required",
@@ -63,6 +64,7 @@ export const TEXT = Object.freeze({
   account: "Account",
   sign_out: "Sign out",
   delete_account: "Delete Account",
+  subscription: "Subscription",
   edit: "Edit",
   cancel: "Cancel",
   save: "Save",
@@ -94,6 +96,12 @@ export const TEXT = Object.freeze({
   email_changed_success:
     "Email address updated successfully. Please log in with your new email.",
   forgot_password: "Forgot Password?",
+  already_have: "Already have an account?",
+  log_in_text: "Log in",
+  or: "or",
+  recover_password: "Recover your password",
+  continue: "Continue",
+  email_sent: "Email sent successfully. Please check your inbox.",
 });
 
 export const ERRORS_TEXT = Object.freeze({
