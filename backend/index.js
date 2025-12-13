@@ -527,6 +527,9 @@ app.post("/create-subscription", verifyToken, async (req, res) => {
       subscription_data: { metadata: { uid } },
       success_url: `${process.env.FRONTEND_URL}/?subscribed=true`,
       cancel_url: `${process.env.FRONTEND_URL}/?subscribed=false`,
+      metadata: {
+        uid: uid,
+      },
     });
 
     res.json({ sessionId: session.id });
