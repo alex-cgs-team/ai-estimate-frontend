@@ -558,6 +558,21 @@ app.post("/cancel-subscription", verifyToken, async (req, res) => {
   }
 });
 
+app.post("/resume-subscription", verifyToken, async (req, res) => {
+  const { subscriptionId } = req.body;
+
+  try {
+    const subscription = await stripe.subscriptions.update(subscriptionId, {
+      cancel_at_period_end: false,
+    });
+
+    res.json({ success: true, subscription });
+  } catch (e) {
+    console.error("❌ resume-subscription error:", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.post("/get-subscription-status", verifyToken, async (req, res) => {
   const { uid, subscriptionId } = req.body;
 

@@ -1,6 +1,6 @@
 import { ArrowBack } from "@/components";
 import { useAuth, useModal } from "@/hooks";
-import { CancelSubscriptionModal, DeleteModal } from "@/modals";
+import { DeleteModal } from "@/modals";
 import { ROUTES } from "@/shared/constants/routes";
 import { TEXT } from "@/shared/constants/text";
 import { roleLabels } from "@/shared/constants/variables";
@@ -18,11 +18,6 @@ export const Profile = () => {
   const navigate = useNavigate();
 
   const { close, isVisible, toggle } = useModal();
-  const {
-    close: closeSubscription,
-    isVisible: isVisibleSubscription,
-    toggle: toggleSubscription,
-  } = useModal();
 
   const [activeEdit, setActiveEdit] = useState<null | string>(null);
 
@@ -51,6 +46,8 @@ export const Profile = () => {
         },
       ]
     : [];
+
+  console.log(profile);
   return (
     <div>
       <ArrowBack />
@@ -93,11 +90,11 @@ export const Profile = () => {
           </div>
 
           <div className="px-4 mt-5">
-            {profile?.usage ? (
+            {profile && user && profile.usage?.subscriptionId ? (
               <SubscriptionSettings
-                autoRenew={!profile.usage.autoRenew}
-                toggleSubscription={toggleSubscription}
-                renewSubscription={() => console.log("test")}
+                autoRenew={!!profile.usage.autoRenew}
+                uid={user.uid}
+                subscriptionId={profile.usage.subscriptionId}
               />
             ) : null}
             <div className="flex justify-between items-center mt-5">
@@ -147,11 +144,6 @@ export const Profile = () => {
         </div>
       </div>
       <DeleteModal close={close} isVisible={isVisible} toggle={toggle} />
-      <CancelSubscriptionModal
-        close={closeSubscription}
-        isVisible={isVisibleSubscription}
-        toggle={toggleSubscription}
-      />
     </div>
   );
 };
