@@ -1,99 +1,14 @@
-import { ArrowBack, Button, DropDown, Input } from "@/components";
-import { useAuth, useError, useModal } from "@/hooks";
-import { DeleteModal } from "@/modals";
+import { ArrowBack } from "@/components";
+import { useAuth, useModal } from "@/hooks";
+import { CancelSubscriptionModal, DeleteModal } from "@/modals";
 import { ROUTES } from "@/shared/constants/routes";
-import { ERRORS_TEXT, TEXT } from "@/shared/constants/text";
-import { roleLabels, roles } from "@/shared/constants/variables";
-import { showToast } from "@/utils";
+import { TEXT } from "@/shared/constants/text";
+import { roleLabels } from "@/shared/constants/variables";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-const NameEdit = ({ close }: { close: () => void }) => {
-  const { profile, user, updateProfile } = useAuth();
-  const [name, setName] = useState(profile ? profile.name : "");
-  const [loading, setLoading] = useState(false);
-
-  const { setToastErrorText } = useError();
-
-  if (!user) {
-    return null;
-  }
-
-  const update = async () => {
-    setLoading(true);
-    try {
-      await updateProfile({ name });
-      showToast({
-        type: "success",
-        text: TEXT.profile_updated,
-      });
-      close();
-    } catch {
-      setToastErrorText(ERRORS_TEXT.profile_update_error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  return (
-    <div>
-      <Input value={name} onChange={setName} />
-      <div className="flex gap-1 mt-2">
-        <Button
-          title={TEXT.save}
-          onClick={update}
-          type="black"
-          isLoading={loading}
-          disabled={loading}
-        />
-        <Button title={TEXT.cancel} onClick={close} type="white" />
-      </div>
-    </div>
-  );
-};
-
-const RoleEdit = ({ close }: { close: () => void }) => {
-  const { profile, user, updateProfile } = useAuth();
-  const [role, setRole] = useState(profile ? profile.role : "");
-  const [loading, setLoading] = useState(false);
-
-  const { setToastErrorText } = useError();
-
-  if (!user) {
-    return null;
-  }
-
-  const update = async () => {
-    setLoading(true);
-    try {
-      await updateProfile({ role });
-      showToast({
-        type: "success",
-        text: TEXT.profile_updated,
-      });
-      close();
-    } catch {
-      setToastErrorText(ERRORS_TEXT.profile_update_error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div>
-      <DropDown value={role} onChange={setRole} options={roles} />
-      <div className="flex gap-1 mt-2">
-        <Button
-          title={TEXT.save}
-          onClick={update}
-          type="black"
-          isLoading={loading}
-          disabled={loading}
-        />
-        <Button title={TEXT.cancel} onClick={close} type="white" />
-      </div>
-    </div>
-  );
-};
+import { NameEdit } from "./components/name-edit/NameEdit.component";
+import { RoleEdit } from "./components/role-edit/RoleEdit.component";
+import { SubscriptionSettings } from "./components/subscription/Subscription.component";
 
 export const Profile = () => {
   const { user, profile, signOut, isGoogleProvider } = useAuth();
@@ -103,6 +18,11 @@ export const Profile = () => {
   const navigate = useNavigate();
 
   const { close, isVisible, toggle } = useModal();
+  const {
+    close: closeSubscription,
+    isVisible: isVisibleSubscription,
+    toggle: toggleSubscription,
+  } = useModal();
 
   const [activeEdit, setActiveEdit] = useState<null | string>(null);
 
@@ -173,28 +93,13 @@ export const Profile = () => {
           </div>
 
           <div className="px-4 mt-5">
-            <div className="flex justify-between items-center">
-              <p className="text-subtitle text-xl text-black">
-                {TEXT.subscription}
-              </p>
-              <button
-                className="
-                    w-[177px]
-                    rounded-xl
-                    bg-white
-                    px-[20px] py-[12px]
-                    text-sm font-medium 
-                    flex items-center justify-center gap-2
-                    border border-[#ECE5EF]
-                    hover:bg-[#F3DFFF]
-                    transition
-                    cursor-pointer
-                "
-                onClick={signOut}
-              >
-                <span className="text-[#594C5D]">{TEXT.sign_out}</span>
-              </button>
-            </div>
+            {profile?.usage ? (
+              <SubscriptionSettings
+                autoRenew={!profile.usage.autoRenew}
+                toggleSubscription={toggleSubscription}
+                renewSubscription={() => console.log("test")}
+              />
+            ) : null}
             <div className="flex justify-between items-center mt-5">
               <p className="text-subtitle text-xl text-black">
                 {TEXT.sign_out}
@@ -242,6 +147,11 @@ export const Profile = () => {
         </div>
       </div>
       <DeleteModal close={close} isVisible={isVisible} toggle={toggle} />
+      <CancelSubscriptionModal
+        close={closeSubscription}
+        isVisible={isVisibleSubscription}
+        toggle={toggleSubscription}
+      />
     </div>
   );
 };
