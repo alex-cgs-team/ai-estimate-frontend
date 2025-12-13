@@ -43,7 +43,7 @@ export const SubscriptionSettings = ({
       setSubsInfo(data);
     } catch {
       setToastErrorText(ERRORS_TEXT.something_went_wrong);
-      close();
+      closeSubscription();
     }
   }, [subscriptionId, uid]);
 
@@ -86,7 +86,7 @@ export const SubscriptionSettings = ({
       setToastErrorText(ERRORS_TEXT.failed_to_resume);
     } finally {
       setLoading(false);
-      close();
+      closeSubscription();
     }
   };
 
