@@ -161,11 +161,10 @@ if (isDev) {
 
         if (uid) {
           let status = "active";
-          let currentPeriodEnd = "test";
+          let currentPeriodEnd = null;
           let autoRenew = true; // По умолчанию true при новой подписке
 
           if (subscriptionId) {
-            console.log("subscriptionId", subscriptionId);
             const sub = await stripe.subscriptions.retrieve(subscriptionId);
             status = sub.status;
             // Инвертируем значение: если cancel_at_period_end = false, значит autoRenew = true
@@ -173,7 +172,6 @@ if (isDev) {
             currentPeriodEnd = sub.current_period_end
               ? sub.current_period_end * 1000
               : null;
-            console.log("currentPeriodEnd", currentPeriodEnd);
           }
 
           const paid = status === "active" || status === "trialing";
@@ -338,16 +336,21 @@ if (isDev) {
           const session = event.data.object;
           const uid = session.metadata?.uid;
           const subscriptionId = session.subscription;
+
+          console.log("uid", uid);
           if (uid) {
             let status = "active";
-            let currentPeriodEnd = null;
+            let currentPeriodEnd = "test";
             let autoRenew = true; // По умолчанию true
 
+            console.log("subscriptionId", subscriptionId);
             if (subscriptionId) {
               const sub = await stripe.subscriptions.retrieve(subscriptionId);
               status = sub.status;
               // Инвертируем: если cancel_at_period_end = false, значит автопродление включено
               autoRenew = !sub.cancel_at_period_end;
+              console.log("sub", sub);
+              console.log("sub.current_period_end", sub.current_period_end);
               currentPeriodEnd = sub.current_period_end
                 ? sub.current_period_end * 1000
                 : null;
