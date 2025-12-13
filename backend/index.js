@@ -151,22 +151,31 @@ if (isDev) {
   app.post("/stripe-webhook", express.json(), async (req, res) => {
     const event = req.body;
     console.log("🔧 [DEV] Webhook event:", event.type);
+
     try {
+      // 1. Обработка успешной оплаты (первой)
       if (event.type === "checkout.session.completed") {
         const session = event.data.object;
         const uid = session.metadata?.uid;
         const subscriptionId = session.subscription;
+
         if (uid) {
           let status = "active";
           let currentPeriodEnd = null;
+          let autoRenew = true; // По умолчанию true при новой подписке
+
           if (subscriptionId) {
             const sub = await stripe.subscriptions.retrieve(subscriptionId);
             status = sub.status;
+            // Инвертируем значение: если cancel_at_period_end = false, значит autoRenew = true
+            autoRenew = !sub.cancel_at_period_end;
             currentPeriodEnd = sub.current_period_end
               ? sub.current_period_end * 1000
               : null;
           }
+
           const paid = status === "active" || status === "trialing";
+
           await admin
             .database()
             .ref(`profiles/${uid}/usage`)
@@ -174,90 +183,123 @@ if (isDev) {
               paid,
               subscriptionId: subscriptionId || null,
               status,
+              autoRenew, // <--- Добавили поле
               currentPeriodEnd,
               updatedAt: Date.now(),
             });
+
           console.log(`✅ [DEV] User ${uid} subscription set:`, {
             status,
+            autoRenew,
             currentPeriodEnd,
           });
         }
       }
 
+      // 2. Обработка обновления или удаления подписки (включая отмену)
       if (
         event.type === "customer.subscription.updated" ||
         event.type === "customer.subscription.deleted"
       ) {
         const sub = event.data.object;
         const uid = sub.metadata?.uid;
+
         if (uid) {
           const status = sub.status;
           const currentPeriodEnd = sub.current_period_end
             ? sub.current_period_end * 1000
             : null;
+
+          // Получаем статус автопродления из объекта подписки
+          const autoRenew = !sub.cancel_at_period_end;
+
           const paid = status === "active" || status === "trialing";
+
           await admin.database().ref(`profiles/${uid}/usage`).update({
             paid,
             subscriptionId: sub.id,
             status,
+            autoRenew, // <--- Добавили поле
             currentPeriodEnd,
             updatedAt: Date.now(),
           });
+
           console.log(`ℹ️ [DEV] Subscription update for ${uid}:`, {
             status,
+            autoRenew,
             currentPeriodEnd,
           });
         }
       }
 
+      // 3. Обработка успешного продления (инвойс)
       if (event.type === "invoice.payment_succeeded") {
         const invoice = event.data.object;
         const subscriptionId = invoice.subscription;
+
         if (subscriptionId) {
           const sub = await stripe.subscriptions.retrieve(subscriptionId);
           const uid = sub.metadata?.uid;
+
           if (uid) {
             const status = sub.status;
             const currentPeriodEnd = sub.current_period_end
               ? sub.current_period_end * 1000
               : null;
+
+            const autoRenew = !sub.cancel_at_period_end;
+
             const paid = status === "active" || status === "trialing";
+
             await admin.database().ref(`profiles/${uid}/usage`).update({
               paid,
               subscriptionId: sub.id,
               status,
+              autoRenew, // <--- Добавили поле
               currentPeriodEnd,
               updatedAt: Date.now(),
             });
+
             console.log(`💸 [DEV] Invoice succeeded for ${uid}:`, {
               status,
+              autoRenew,
               currentPeriodEnd,
             });
           }
         }
       }
 
+      // 4. Обработка ошибки оплаты
       if (event.type === "invoice.payment_failed") {
         const invoice = event.data.object;
         const subscriptionId = invoice.subscription;
+
         if (subscriptionId) {
           const sub = await stripe.subscriptions.retrieve(subscriptionId);
           const uid = sub.metadata?.uid;
+
           if (uid) {
-            const status = sub.status; // обычно past_due или unpaid
+            const status = sub.status;
             const currentPeriodEnd = sub.current_period_end
               ? sub.current_period_end * 1000
               : null;
+
+            const autoRenew = !sub.cancel_at_period_end;
+
             const paid = ["active", "trialing"].includes(status);
+
             await admin.database().ref(`profiles/${uid}/usage`).update({
               paid,
               subscriptionId: sub.id,
               status,
+              autoRenew, // <--- Добавили поле
               currentPeriodEnd,
               updatedAt: Date.now(),
             });
+
             console.log(`⚠️ [DEV] Invoice failed for ${uid}:`, {
               status,
+              autoRenew,
               currentPeriodEnd,
             });
           }
@@ -287,7 +329,9 @@ if (isDev) {
         return res.status(400).send(`Webhook Error: ${e.message}`);
       }
       try {
-        console.log("🌐 [WEBHOOK]", event.type); // <--- вот тут
+        console.log("🌐 [WEBHOOK]", event.type);
+
+        // 1. ПЕРВАЯ ПОКУПКА (Checkout)
         if (event.type === "checkout.session.completed") {
           const session = event.data.object;
           const uid = session.metadata?.uid;
@@ -295,9 +339,13 @@ if (isDev) {
           if (uid) {
             let status = "active";
             let currentPeriodEnd = null;
+            let autoRenew = true; // По умолчанию true
+
             if (subscriptionId) {
               const sub = await stripe.subscriptions.retrieve(subscriptionId);
               status = sub.status;
+              // Инвертируем: если cancel_at_period_end = false, значит автопродление включено
+              autoRenew = !sub.cancel_at_period_end;
               currentPeriodEnd = sub.current_period_end
                 ? sub.current_period_end * 1000
                 : null;
@@ -310,16 +358,19 @@ if (isDev) {
                 paid,
                 subscriptionId: subscriptionId || null,
                 status,
+                autoRenew, // <--- Добавили
                 currentPeriodEnd,
                 updatedAt: Date.now(),
               });
             console.log(`✅ User ${uid} subscription set:`, {
               status,
+              autoRenew,
               currentPeriodEnd,
             });
           }
         }
 
+        // 2. ОБНОВЛЕНИЕ ИЛИ УДАЛЕНИЕ ПОДПИСКИ (включая отмену)
         if (
           event.type === "customer.subscription.updated" ||
           event.type === "customer.subscription.deleted"
@@ -328,6 +379,9 @@ if (isDev) {
           const uid = sub.metadata?.uid;
           if (uid) {
             const status = sub.status;
+            // Берем статус автопродления напрямую из объекта события
+            const autoRenew = !sub.cancel_at_period_end;
+
             const currentPeriodEnd = sub.current_period_end
               ? sub.current_period_end * 1000
               : null;
@@ -336,16 +390,19 @@ if (isDev) {
               paid,
               subscriptionId: sub.id,
               status,
+              autoRenew, // <--- Добавили
               currentPeriodEnd,
               updatedAt: Date.now(),
             });
             console.log(`ℹ️ Subscription update for ${uid}:`, {
               status,
+              autoRenew,
               currentPeriodEnd,
             });
           }
         }
 
+        // 3. УСПЕШНАЯ ОПЛАТА ИНВОЙСА (Продление)
         if (event.type === "invoice.payment_succeeded") {
           const invoice = event.data.object;
           const subscriptionId = invoice.subscription;
@@ -354,6 +411,8 @@ if (isDev) {
             const uid = sub.metadata?.uid;
             if (uid) {
               const status = sub.status;
+              const autoRenew = !sub.cancel_at_period_end; // <--- Вычисляем
+
               const currentPeriodEnd = sub.current_period_end
                 ? sub.current_period_end * 1000
                 : null;
@@ -362,17 +421,20 @@ if (isDev) {
                 paid,
                 subscriptionId: sub.id,
                 status,
+                autoRenew, // <--- Добавили
                 currentPeriodEnd,
                 updatedAt: Date.now(),
               });
               console.log(`💸 Invoice succeeded for ${uid}:`, {
                 status,
+                autoRenew,
                 currentPeriodEnd,
               });
             }
           }
         }
 
+        // 4. ОШИБКА ОПЛАТЫ ИНВОЙСА
         if (event.type === "invoice.payment_failed") {
           const invoice = event.data.object;
           const subscriptionId = invoice.subscription;
@@ -381,6 +443,8 @@ if (isDev) {
             const uid = sub.metadata?.uid;
             if (uid) {
               const status = sub.status;
+              const autoRenew = !sub.cancel_at_period_end; // <--- Вычисляем
+
               const currentPeriodEnd = sub.current_period_end
                 ? sub.current_period_end * 1000
                 : null;
@@ -389,11 +453,13 @@ if (isDev) {
                 paid,
                 subscriptionId: sub.id,
                 status,
+                autoRenew, // <--- Добавили
                 currentPeriodEnd,
                 updatedAt: Date.now(),
               });
               console.log(`⚠️ Invoice failed for ${uid}:`, {
                 status,
+                autoRenew,
                 currentPeriodEnd,
               });
             }
@@ -444,9 +510,6 @@ app.post("/create-subscription", verifyToken, async (req, res) => {
     // 2) если нет — создаём; clock только при создании
     if (!customerId) {
       const createParams = { metadata: { uid, env: "stg" } };
-      if (process.env.STRIPE_TEST_CLOCK_ID) {
-        createParams.test_clock = process.env.STRIPE_TEST_CLOCK_ID;
-      }
       const customer = await stripe.customers.create(createParams);
       customerId = customer.id;
     }
