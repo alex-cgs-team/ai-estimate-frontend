@@ -161,10 +161,11 @@ if (isDev) {
 
         if (uid) {
           let status = "active";
-          let currentPeriodEnd = null;
+          let currentPeriodEnd = "test";
           let autoRenew = true; // По умолчанию true при новой подписке
 
           if (subscriptionId) {
+            console.log("subscriptionId", subscriptionId);
             const sub = await stripe.subscriptions.retrieve(subscriptionId);
             status = sub.status;
             // Инвертируем значение: если cancel_at_period_end = false, значит autoRenew = true
@@ -172,6 +173,7 @@ if (isDev) {
             currentPeriodEnd = sub.current_period_end
               ? sub.current_period_end * 1000
               : null;
+            console.log("currentPeriodEnd", currentPeriodEnd);
           }
 
           const paid = status === "active" || status === "trialing";
@@ -528,6 +530,29 @@ app.post("/create-subscription", verifyToken, async (req, res) => {
   } catch (e) {
     console.error("❌ create-subscription error:", e);
     res.status(500).json({ error: e.message, type: e.type || null });
+  }
+});
+
+app.post("/cancel-subscription", verifyToken, async (req, res) => {
+  const { subscriptionId } = req.body;
+
+  if (!subscriptionId) {
+    return res.status(400).json({ error: "Subscription ID is required" });
+  }
+
+  try {
+    const subscription = await stripe.subscriptions.update(subscriptionId, {
+      cancel_at_period_end: true,
+    });
+
+    res.json({
+      success: true,
+      status: subscription.status,
+      cancel_at_period_end: subscription.cancel_at_period_end,
+    });
+  } catch (error) {
+    console.error("Error cancelling subscription:", error);
+    res.status(500).json({ error: "Failed to cancel subscription" });
   }
 });
 
