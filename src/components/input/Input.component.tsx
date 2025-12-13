@@ -1,4 +1,4 @@
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { useState } from "react";
 
 type Props = {
@@ -46,6 +46,18 @@ export const Input = ({
       </div>
 
       <div className="relative">
+        {/* ИКОНКА EMAIL */}
+        {type === "email" && (
+          <div className="absolute left-3 top-0 bottom-0 flex items-center pointer-events-none z-20">
+            <Mail size={16} color="#737373" />
+          </div>
+        )}
+        {type === "password" && (
+          <div className="absolute left-3 top-0 bottom-0 flex items-center pointer-events-none z-20">
+            <Lock size={16} color="#737373" />
+          </div>
+        )}
+
         <input
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -54,12 +66,14 @@ export const Input = ({
           maxLength={maxLength}
           type={inputType}
           className={`
-            w-full h-[42px] rounded-xl border px-3 py-2 text-sm outline-none
+            w-full h-[42px] rounded-xl border py-2 text-sm outline-none
             bg-white text-gray-900 placeholder:text-gray-400
             shadow-[0_1px_2px_rgba(0,0,0,0.05)]
             transition-all duration-200 
             
-            ${isPasswordType ? "pr-10" : ""} /* Отступ справа для иконки */
+   
+            ${type === "email" || type === "password" ? "pl-8 pr-3" : "px-3"}
+            ${isPasswordType ? "pr-10" : ""} 
 
             ${disabled ? "bg-gray-50 text-gray-400 cursor-not-allowed" : ""}
 

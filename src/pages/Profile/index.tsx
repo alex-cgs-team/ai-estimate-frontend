@@ -171,8 +171,31 @@ export const Profile = () => {
           <div className="w-full rounded-xl px-4 py-2 bg-[#F1F3F8]">
             <p className="text-title">{TEXT.account}</p>
           </div>
+
           <div className="px-4 mt-5">
             <div className="flex justify-between items-center">
+              <p className="text-subtitle text-xl text-black">
+                {TEXT.subscription}
+              </p>
+              <button
+                className="
+                    w-[177px]
+                    rounded-xl
+                    bg-white
+                    px-[20px] py-[12px]
+                    text-sm font-medium 
+                    flex items-center justify-center gap-2
+                    border border-[#ECE5EF]
+                    hover:bg-[#F3DFFF]
+                    transition
+                    cursor-pointer
+                "
+                onClick={signOut}
+              >
+                <span className="text-[#594C5D]">{TEXT.sign_out}</span>
+              </button>
+            </div>
+            <div className="flex justify-between items-center mt-5">
               <p className="text-subtitle text-xl text-black">
                 {TEXT.sign_out}
               </p>
@@ -180,11 +203,12 @@ export const Profile = () => {
                 className="
                     w-[177px]
                     rounded-xl
-                    bg-[#F9E9FF]
+                    bg-white]
                     px-[20px] py-[12px]
                     text-sm font-medium 
                     flex items-center justify-center gap-2
                     hover:bg-[#F3DFFF]
+                    border border-[#ECE5EF]
                     transition
                     cursor-pointer
                 "

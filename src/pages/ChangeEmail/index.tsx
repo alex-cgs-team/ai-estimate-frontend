@@ -1,4 +1,4 @@
-import { ChangePhonePNG } from "@/assets/images";
+import { MailPNG } from "@/assets/images";
 import { ArrowBack, Button, Input } from "@/components";
 import { useAuth, useError } from "@/hooks";
 import {
@@ -7,6 +7,7 @@ import {
 } from "@/schemas/profile.schema";
 import { ROUTES } from "@/shared/constants/routes";
 import { ERRORS_TEXT, TEXT } from "@/shared/constants/text";
+import { ResentEmailType } from "@/types/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
@@ -33,6 +34,8 @@ export const ChangeEmail = () => {
       navigate(ROUTES.sentEmail, {
         state: {
           email: data.newEmail,
+          type: ResentEmailType.changeEmail,
+          password: data.password,
         },
       });
     } catch (error) {
@@ -49,11 +52,11 @@ export const ChangeEmail = () => {
   return (
     <div className="flex items-center justify-center mt-20 flex-col gap-6 max-w-sm mx-auto">
       <ArrowBack />
-      <img src={ChangePhonePNG} alt="Change phone" />
+      <img className="w-[80px] h-[80px]" src={MailPNG} alt="Change phone" />
       <div className="flex-col text-center gap-1">
         <p className="text-title">{TEXT.change_email}</p>
       </div>
-      <div className="w-full border-t border-gray-200" />
+      <div className="w-full border-t border-[#ECE5EF]" />
       <div className="w-full flex flex-col gap-2">
         <Controller
           control={control}
@@ -90,8 +93,8 @@ export const ChangeEmail = () => {
       </div>
 
       <Button
-        title={TEXT.change}
-        rightIcon={<ArrowRight size={16} color="white" />}
+        title={TEXT.continue}
+        rightIcon={<ArrowRight size={16} color="#5A4886" />}
         onClick={handleSubmit(onSubmit)}
         disabled={!(isDirty && isValid)}
         isLoading={isSubmitting}

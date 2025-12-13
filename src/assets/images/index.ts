@@ -1,10 +1,11 @@
+export { default as GlassPNG } from "../images/glass.png";
+export { default as MailPNG } from "../images/mail.png";
+export { default as ChangePhonePNG } from "./change-phone.png";
+export { default as CreditIconPNG } from "./credit-icon.png";
+export { default as FolderPNG } from "./folder.png";
+export { default as LoadingPNG } from "./loading.png";
 export { default as MagicTrickPNG } from "./magic-trick.png";
 export { default as MobilePNG } from "./mobile.png";
 export { default as NotebookPNG } from "./notebook.png";
 export { default as ThumbUpPNG } from "./thumb-up.png";
-export { default as FolderPNG } from "./folder.png";
-export { default as LoadingPNG } from "./loading.png";
 export { default as UserProfilePNG } from "./user-profile.png";
-export { default as CreditIconPNG } from "./credit-icon.png";
-export { default as ChangePhonePNG } from "./change-phone.png";
-export { default as GlassPNG } from "../images/glass.png";
