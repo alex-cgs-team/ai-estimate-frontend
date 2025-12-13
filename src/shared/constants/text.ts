@@ -65,6 +65,7 @@ export const TEXT = Object.freeze({
   sign_out: "Sign out",
   delete_account: "Delete Account",
   subscription: "Subscription",
+  subscription_till: "Subscription till",
   edit: "Edit",
   cancel: "Cancel",
   save: "Save",
@@ -103,8 +104,10 @@ export const TEXT = Object.freeze({
   continue: "Continue",
   email_sent: "Email sent successfully. Please check your inbox.",
   cancel_subscription: "Cancel subscription",
+  resume_subscription: "Resume subscription",
   confirm: "Confirm",
   auto_renewal: "Auto-renewal has been disabled successfully.",
+  subscription_resumed: "Subscription successfully resumed",
 });
 
 export const ERRORS_TEXT = Object.freeze({
@@ -124,6 +127,7 @@ export const ERRORS_TEXT = Object.freeze({
   email_not_verified: "Your email is not verified. Please check your inbox.",
   email_already_in_use: "User with this email already exists",
   failed_cancel: "Failed to cancel subscription. Please try again.",
+  failed_to_resume: "Failed to resume subscription",
 });
 
 export const MODALS_TEXT = Object.freeze({
