@@ -6,6 +6,7 @@ export interface IProfile {
     paid?: boolean;
     status?: string;
     subscriptionId?: string;
+    autoRenew?: boolean;
   };
 }
 

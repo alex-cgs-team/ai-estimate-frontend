@@ -102,6 +102,9 @@ export const TEXT = Object.freeze({
   recover_password: "Recover your password",
   continue: "Continue",
   email_sent: "Email sent successfully. Please check your inbox.",
+  cancel_subscription: "Cancel subscription",
+  confirm: "Confirm",
+  auto_renewal: "Auto-renewal has been disabled successfully.",
 });
 
 export const ERRORS_TEXT = Object.freeze({
@@ -120,6 +123,7 @@ export const ERRORS_TEXT = Object.freeze({
   passwords_do_not_match: "Passwords do not match",
   email_not_verified: "Your email is not verified. Please check your inbox.",
   email_already_in_use: "User with this email already exists",
+  failed_cancel: "Failed to cancel subscription. Please try again.",
 });
 
 export const MODALS_TEXT = Object.freeze({
@@ -138,4 +142,7 @@ export const MODALS_TEXT = Object.freeze({
     "Are you sure you want to restore previous information?",
   upgrade_plan: "Upgrade your plan",
   unlimited_access: "And gain unlimited access to all AI Estimate features!",
+  cancel_subscription: "Cancel subscription?",
+  you_will_retain: "You will retain all your premium benefits until",
+  switch_to_free_plan: ", after which you will be switched to the free plan.",
 });
