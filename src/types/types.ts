@@ -26,3 +26,14 @@ export type UseModalReturn = {
   isVisible: boolean;
   close: () => void;
 };
+
+export type SentEmailType = "verifyEmail" | "forgotPassword" | "changeEmail";
+
+export const ResentEmailType = {
+  verifyEmail: "verifyEmail",
+  forgotPassword: "forgotPassword",
+  changeEmail: "changeEmail",
+} as const;
+
+export type ResentEmailType =
+  (typeof ResentEmailType)[keyof typeof ResentEmailType];

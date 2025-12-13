@@ -43,14 +43,21 @@ export default function Header() {
   if (!user || !profile) {
     return (
       <header className="px-5 shadow-sm h-12 flex items-center justify-between">
-        <Logo />
+        <div
+          className="cursor-pointer"
+          onClick={() => navigate(ROUTES.welcome)}
+        >
+          <Logo />
+        </div>
       </header>
     );
   }
 
   return (
     <header className="px-5 shadow-sm h-12 flex items-center justify-between">
-      <Logo />
+      <div className="cursor-pointer" onClick={() => navigate(ROUTES.main)}>
+        <Logo />
+      </div>
 
       <div className="flex gap-3 items-center">
         {/* Credits pill */}

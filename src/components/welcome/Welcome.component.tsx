@@ -10,6 +10,7 @@ import { ArrowRight } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../button/Button.component";
+import { GoogleButton } from "../google-button/GoogleButton.component";
 import { Input } from "../input/Input.component";
 
 export const Welcome = () => {
@@ -23,8 +24,7 @@ export const Welcome = () => {
     defaultValues: { email: "", password: "" },
   });
 
-  const { signInWithEmailPassword, resendVerifyEmail, signInWithGoogle } =
-    useAuth();
+  const { signInWithEmailPassword, resendVerifyEmail } = useAuth();
   const { setToastErrorText } = useError();
   const navigate = useNavigate();
 
@@ -63,20 +63,6 @@ export const Welcome = () => {
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    try {
-      const user = await signInWithGoogle();
-      const snap = await get(ref(rtdb, `profiles/${user.uid}`));
-      if (snap.val()) {
-        navigate(ROUTES.main);
-      } else {
-        navigate(ROUTES.onboarding);
-      }
-    } catch {
-      setToastErrorText(ERRORS_TEXT.something_went_wrong);
-    }
-  };
-
   return (
     <>
       <div className="w-full flex flex-col gap-2">
@@ -111,7 +97,7 @@ export const Welcome = () => {
               />
 
               <Link
-                className="text-subtitle cursor-pointer"
+                className="text-subtitle text-[#9A55BF] cursor-pointer"
                 to={ROUTES.forgorPassword}
               >
                 {TEXT.forgot_password}
@@ -127,11 +113,7 @@ export const Welcome = () => {
         disabled={!(isDirty && isValid)}
         isLoading={isSubmitting}
       />
-      <Button
-        title={TEXT.log_in_with_google}
-        rightIcon={<ArrowRight size={16} color="#5A4886" />}
-        onClick={handleGoogleSignIn}
-      />
+
       <div className="flex justify-center gap-1">
         <p className="text-subtitle">{TEXT.new_to_ai}</p>
         <Link
@@ -141,6 +123,12 @@ export const Welcome = () => {
           {TEXT.sign_up}
         </Link>
       </div>
+      <div className="flex items-center w-full gap-3">
+        <div className="w-full h-px bg-[#F4D8FF]" />
+        <p className="text-subtitle">{TEXT.or}</p>
+        <div className="w-full h-px bg-[#F4D8FF]" />
+      </div>
+      <GoogleButton />
     </>
   );
 };
