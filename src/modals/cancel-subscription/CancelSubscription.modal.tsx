@@ -1,11 +1,12 @@
 import { cancelSubscription } from "@/api/subscription/subscription.api";
 import { Button, Modal } from "@/components";
-import { auth } from "@/firebase";
+import { auth, rtdb } from "@/firebase";
 import { useError } from "@/hooks";
 import { ERRORS_TEXT, MODALS_TEXT, TEXT } from "@/shared/constants/text";
 import { useAuthStore } from "@/stores/auth/auth.store";
 import type { UseModalReturn } from "@/types/types";
 import { showToast } from "@/utils";
+import { get, ref } from "firebase/database";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 
@@ -13,8 +14,9 @@ export const CancelSubscriptionModal = ({
   close,
   isVisible,
   toggle,
-}: UseModalReturn) => {
-  const { profile } = useAuthStore();
+  activeUntil,
+}: UseModalReturn & { activeUntil: string }) => {
+  const { profile, setProfile } = useAuthStore();
   const { setToastErrorText } = useError();
 
   const [loading, setLoading] = useState(false);
@@ -44,6 +46,21 @@ export const CancelSubscriptionModal = ({
         subscriptionId: subscriptionId,
       });
 
+      const userRef = ref(rtdb, `profiles/${user.uid}`);
+
+      const snapshot = await get(userRef);
+
+      if (snapshot.exists()) {
+        const updatedProfile = snapshot.val();
+        setProfile({
+          ...updatedProfile,
+          usage: {
+            ...updatedProfile.usage,
+            autoRenew: false,
+          },
+        });
+      }
+
       showToast({
         type: "success",
         text: TEXT.auto_renewal,
@@ -65,7 +82,7 @@ export const CancelSubscriptionModal = ({
     >
       <p className="text-subtitle text-gray-500 mt-2">
         <span>{MODALS_TEXT.you_will_retain} </span>
-        <span>{profile.usage?.subscriptionId} </span>
+        <span>{activeUntil} </span>
         <span>{MODALS_TEXT.you_will_retain}</span>
       </p>
 
