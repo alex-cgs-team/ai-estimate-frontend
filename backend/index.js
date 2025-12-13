@@ -337,20 +337,16 @@ if (isDev) {
           const uid = session.metadata?.uid;
           const subscriptionId = session.subscription;
 
-          console.log("uid", uid);
           if (uid) {
             let status = "active";
-            let currentPeriodEnd = "test";
+            let currentPeriodEnd = null;
             let autoRenew = true; // По умолчанию true
 
-            console.log("subscriptionId", subscriptionId);
             if (subscriptionId) {
               const sub = await stripe.subscriptions.retrieve(subscriptionId);
               status = sub.status;
               // Инвертируем: если cancel_at_period_end = false, значит автопродление включено
               autoRenew = !sub.cancel_at_period_end;
-              console.log("sub", sub);
-              console.log("sub.current_period_end", sub.current_period_end);
               currentPeriodEnd = sub.current_period_end
                 ? sub.current_period_end * 1000
                 : null;
@@ -559,6 +555,50 @@ app.post("/cancel-subscription", verifyToken, async (req, res) => {
   } catch (error) {
     console.error("Error cancelling subscription:", error);
     res.status(500).json({ error: "Failed to cancel subscription" });
+  }
+});
+
+app.post("/get-subscription-status", verifyToken, async (req, res) => {
+  const { uid, subscriptionId } = req.body;
+
+  if (!uid || !subscriptionId) {
+    return res.status(400).json({ error: "Missing uid or subscriptionId" });
+  }
+
+  try {
+    const sub = await stripe.subscriptions.retrieve(subscriptionId);
+
+    const status = sub.status;
+    const autoRenew = !sub.cancel_at_period_end;
+
+    const currentPeriodEnd = sub.current_period_end
+      ? sub.current_period_end * 1000
+      : null;
+
+    const paid = status === "active" || status === "trialing";
+
+    await admin.database().ref(`profiles/${uid}/usage`).update({
+      paid,
+      status,
+      autoRenew,
+      subscriptionId: sub.id,
+      currentPeriodEnd,
+      lastSyncedAt: Date.now(),
+    });
+
+    console.log(
+      `🔄 Manual sync for user ${uid}: End date restored to ${currentPeriodEnd}`
+    );
+
+    res.json({
+      success: true,
+      currentPeriodEnd,
+      autoRenew,
+      status,
+    });
+  } catch (error) {
+    console.error("❌ Error syncing subscription:", error.message);
+    res.status(500).json({ error: "Failed to fetch subscription data" });
   }
 });
 
