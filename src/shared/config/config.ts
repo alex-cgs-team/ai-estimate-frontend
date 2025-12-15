@@ -1,7 +1,7 @@
 import { loadStripe } from "@stripe/stripe-js";
 import { STRIPE_PUBLISHABLE_KEY } from "../constants/env";
 
-export const FREE_LIMIT = 3;
+export const FREE_LIMIT = 100;
 export const TEXT_FILES_LIMIT = 4;
 export const VISUAL_FILES_LIMIT = 3;
 export const NOTES_TO_AI_LIMIT = 300;
