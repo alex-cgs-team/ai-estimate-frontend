@@ -37,6 +37,7 @@ const allowList = [
   "http://localhost:5174",
   "http://localhost:3000",
   "https://ai-estimate-frontend.vercel.app",
+  "https://app.aiquote.io",
 ];
 const previewRe = /\.vercel\.app$/;
 
