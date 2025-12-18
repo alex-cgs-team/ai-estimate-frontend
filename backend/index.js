@@ -104,6 +104,16 @@ app.post("/progress", express.json(), async (req, res) => {
     const newOpRef = ref.push(); // создаёт уникальный ключ для операции
     await newOpRef.set(operation);
 
+    console.log("operation", operation);
+    if (operation.progress === 100) {
+      const refEstimate = admin
+        .database()
+        .ref(`profiles/${uid}/estimates/${executionId}`);
+      await refEstimate.update({
+        isFinished: true,
+      });
+    }
+
     if (operation.step === "step_failed" || operation.status === "failed") {
       const usageCountRef = admin.database().ref(`profiles/${uid}/usage/count`);
       await usageCountRef.transaction(
@@ -114,18 +124,6 @@ app.post("/progress", express.json(), async (req, res) => {
         undefined,
         false
       );
-    }
-
-    if (operation.progress === 100) {
-      const refEstimate = admin
-        .database()
-        .ref(`profiles/${uid}/estimates/${executionId}`);
-      const updatedOperation = {
-        ...operation,
-        isFinished: true,
-      };
-      const newOpRef = refEstimate.push();
-      await newOpRef.set(updatedOperation);
     }
 
     res.json({ status: "ok", key: newOpRef.key });
