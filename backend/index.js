@@ -110,7 +110,7 @@ app.post("/progress", express.json(), async (req, res) => {
         .database()
         .ref(`profiles/${uid}/estimates/${executionId}`);
       await refEstimate.update({
-        link: operation.status,
+        fileLink: operation.status,
         isFinished: true,
       });
     }
