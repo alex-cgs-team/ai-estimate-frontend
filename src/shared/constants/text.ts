@@ -108,6 +108,8 @@ export const TEXT = Object.freeze({
   confirm: "Confirm",
   auto_renewal: "Auto-renewal has been disabled successfully.",
   subscription_resumed: "Subscription successfully resumed",
+  history: "History",
+  copied: "Copied",
 });
 
 export const ERRORS_TEXT = Object.freeze({
@@ -149,4 +151,12 @@ export const MODALS_TEXT = Object.freeze({
   cancel_subscription: "Cancel subscription?",
   you_will_retain: "You will retain all your premium benefits until",
   switch_to_free_plan: ", after which you will be switched to the free plan.",
+});
+
+export const TABLE_TEXT = Object.freeze({
+  project_name: "Project Name",
+  date_added: "Date Added",
+  note_to_ai: "Note to AI",
+  link: "Link",
+  go_to_estimate: "Go to AI Estimate",
 });

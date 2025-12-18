@@ -5,7 +5,7 @@ import { StripeModal } from "@/modals";
 import { FREE_LIMIT } from "@/shared/config/config";
 import { ROUTES } from "@/shared/constants/routes";
 import { TEXT } from "@/shared/constants/text";
-import { ChevronRight, File, LogOutIcon } from "lucide-react";
+import { ChevronRight, File, History, LogOutIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -60,10 +60,21 @@ export default function Header() {
       </div>
 
       <div className="flex gap-3 items-center">
+        {/* History pill */}
+        <div
+          onClick={() => navigate(ROUTES.history)}
+          className="border border-[#E5EBEF] px-3 py-2 flex items-center justify-center rounded-xl gap-2 cursor-pointer"
+        >
+          <History color="#373537" size={16} />
+          <p className="text-body">{TEXT.history}</p>
+        </div>
+
         {/* Credits pill */}
         <div
           onClick={!isUnlimited ? toggle : undefined}
-          className="border border-[#E5EBEF] px-3 py-2 flex items-center justify-center rounded-xl gap-2 cursor-pointer"
+          className={`border border-[#E5EBEF] px-3 py-2 flex items-center justify-center rounded-xl gap-2 ${
+            !isUnlimited ? "cursor-pointer" : ""
+          }`}
         >
           <img src={CreditIconPNG} alt="credit icon" />
           <p className="text-body">

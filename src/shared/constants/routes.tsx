@@ -6,6 +6,7 @@ import {
   CodeVerification,
   ConfirmEmail,
   ForgotPassword,
+  HistoryPage,
   Main,
   Onboarding,
   PrivacyPolice,
@@ -35,6 +36,7 @@ export const ROUTES = {
   sentEmail: "/sent-email",
   forgorPassword: "/forgot-password",
   changePassword: "/change-password",
+  history: "/history",
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;
@@ -58,4 +60,5 @@ export const ROUTE_ELEMENT: Record<RouteKey, ReactElement> = {
   sentEmail: <SentEmail />,
   forgorPassword: <ForgotPassword />,
   changePassword: <ChangePassword />,
+  history: <HistoryPage />,
 };

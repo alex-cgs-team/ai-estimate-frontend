@@ -1,0 +1,166 @@
+import { Loader } from "@/components";
+import { useError, useEstimates } from "@/hooks";
+import { ERRORS_TEXT, TABLE_TEXT, TEXT } from "@/shared/constants/text";
+import type { Project } from "@/types/types";
+import { showToast } from "@/utils";
+import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { ArrowUpDown, Copy } from "lucide-react";
+import { useEffect, useMemo } from "react";
+import { Pagination } from "../pagination/Pagination.component";
+
+const columnHelper = createColumnHelper<Project>();
+
+const ITEMS_PER_PAGE = 10;
+
+export const HistoryTable = () => {
+  const { data = [], isLoading, isError } = useEstimates();
+  const { setToastErrorText } = useError();
+
+  useEffect(() => {
+    if (isError) {
+      setToastErrorText(ERRORS_TEXT.something_went_wrong);
+    }
+  }, [isError]);
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        showToast({ text: TEXT.copied, type: "success" });
+      })
+      .catch(() => {
+        setToastErrorText(ERRORS_TEXT.something_went_wrong);
+      });
+  };
+
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor("projectName", {
+        header: () => (
+          <div className="flex items-center gap-1 column-title">
+            {TABLE_TEXT.project_name} <ArrowUpDown size={14} color="#0F0F0F" />
+          </div>
+        ),
+        cell: (info) => <span className="raw-text">{info.getValue()}</span>,
+      }),
+      columnHelper.accessor("dateAdded", {
+        header: () => (
+          <div className="flex items-center gap-1 column-title">
+            {TABLE_TEXT.date_added} <ArrowUpDown size={14} color="#0F0F0F" />
+          </div>
+        ),
+        cell: (info) => <span className="raw-text">{info.getValue()}</span>,
+      }),
+      columnHelper.accessor("noteToAi", {
+        header: () => (
+          <div className="flex items-center gap-1 column-title">
+            {TABLE_TEXT.note_to_ai} <ArrowUpDown size={14} color="#0F0F0F" />
+          </div>
+        ),
+        cell: (info) => (
+          <div className="flex items-center gap-2 group w-full">
+            <span className="raw-text truncate">{info.getValue()}</span>
+            {info.getValue() !== "No notes" && (
+              <button
+                className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 cursor-pointer"
+                onClick={() => handleCopy(info.getValue())}
+              >
+                <Copy size={16} color="#928D95" />
+              </button>
+            )}
+          </div>
+        ),
+      }),
+      columnHelper.accessor("link", {
+        header: () => (
+          <div className="flex items-center justify-end gap-1 column-title w-full pr-22">
+            <span>{TABLE_TEXT.link}</span>
+          </div>
+        ),
+        cell: (info) => (
+          <div className="text-right w-full">
+            <a
+              href={info.getValue()}
+              target="_blank"
+              className="raw-text text-[#A36FD1] underline-offset-4 hover:underline whitespace-nowrap"
+            >
+              {TABLE_TEXT.go_to_estimate}
+            </a>
+          </div>
+        ),
+      }),
+    ],
+    []
+  );
+
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: {
+      pagination: {
+        pageSize: ITEMS_PER_PAGE,
+      },
+    },
+  });
+
+  if (isLoading || isError) {
+    return (
+      <div className="w-full h-[300px] flex justify-center items-center">
+        <Loader />
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h1 className="text-2xl font-semibold mb-4 text-gray-900">
+        {TEXT.history}
+      </h1>
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse">
+          <thead>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr
+                key={headerGroup.id}
+                className="border-b border-t border-[#ECE5EF]"
+              >
+                {headerGroup.headers.map((header) => (
+                  <th
+                    key={header.id}
+                    className="text-left py-3 px-4 text-sm font-medium text-gray-500"
+                  >
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+                  </th>
+                ))}
+              </tr>
+            ))}
+          </thead>
+          <tbody className="divide-y divide-[#ECE5EF] border-b border-[#ECE5EF]">
+            {table.getRowModel().rows.map((row) => (
+              <tr key={row.id} className="hover:bg-gray-50 transition-colors">
+                {row.getVisibleCells().map((cell) => (
+                  <td key={cell.id} className="py-4 px-4 table-raw-text">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <Pagination table={table} />
+      </div>
+    </div>
+  );
+};

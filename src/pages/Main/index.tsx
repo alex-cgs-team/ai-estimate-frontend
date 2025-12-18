@@ -1,6 +1,7 @@
 import { Button, FileDropzone, FilesList, Input, TextArea } from "@/components";
-import { useEffect, useState } from "react";
-import { ERRORS_TEXT, TEXT } from "@/shared/constants/text";
+import { rtdb } from "@/firebase";
+import { useAuth, useError, useModal } from "@/hooks";
+import { LimitModal, RestoreDataModal } from "@/modals";
 import {
   ACCEPT_FILES,
   FREE_LIMIT,
@@ -9,19 +10,18 @@ import {
   TEXT_FILES_LIMIT,
   VISUAL_FILES_LIMIT,
 } from "@/shared/config/config";
+import { N8N_WEBHOOK_URL } from "@/shared/constants/env";
+import { DB_KEYS } from "@/shared/constants/keys";
+import { ROUTES } from "@/shared/constants/routes";
+import { ERRORS_TEXT, TEXT } from "@/shared/constants/text";
 import type { FileEntry } from "@/types/types";
 import { getFileExt, getKind } from "@/utils";
-import { ArrowRight } from "lucide-react";
-import { useAuth, useError, useModal } from "@/hooks";
 import { ref as dbRef, push, runTransaction, set } from "firebase/database";
-import { v4 as uuidv4 } from "uuid";
-import { rtdb } from "@/firebase";
-import { N8N_WEBHOOK_URL } from "@/shared/constants/env";
+import { get, set as setKeyVal } from "idb-keyval";
+import { ArrowRight } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ROUTES } from "@/shared/constants/routes";
-import { LimitModal, RestoreDataModal } from "@/modals";
-import { set as setKeyVal, get } from "idb-keyval";
-import { DB_KEYS } from "@/shared/constants/keys";
+import { v4 as uuidv4 } from "uuid";
 
 export const Main = () => {
   const [projectName, setProjectName] = useState("");
@@ -155,6 +155,7 @@ export const Main = () => {
       await set(estimateRef, {
         projectName,
         notes,
+        isFinished: false,
         sharedLink: respJson.sharedLink || null,
         createdAt: Date.now(),
       });

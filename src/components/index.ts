@@ -8,6 +8,7 @@ export { default as Footer } from "./footer/Footer.component";
 export { GoogleButton } from "./google-button/GoogleButton.component";
 export { default as Header } from "./header/Header.component";
 export { Input } from "./input/Input.component";
+export { Loader } from "./loader/Loader.component";
 export { ModalPortal } from "./modal-portal/ModalPortal.component";
 export { Modal } from "./modal/Modal.component";
 export { OTPCode } from "./otp-code/OtpCode.component";
