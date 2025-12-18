@@ -19,3 +19,11 @@
 @utility text-header {
   @apply font-[Geist] font-medium text-[24px] leading-[1.4] text-[#0F0F0F];
 }
+
+@utility column-title {
+  @apply font-['Geist'] font-medium text-[12px] leading-[1.4] tracking-[0%] text-[#0F0F0F];
+}
+
+@utility table-raw-text {
+  @apply font-['Geist'] font-normal text-[14px] leading-[1.4] tracking-[0%] text-[#0F0F0F];
+}

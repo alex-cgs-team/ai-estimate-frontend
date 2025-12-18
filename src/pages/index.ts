@@ -5,6 +5,7 @@ export { ChangeProfile } from "./ChangePhone";
 export { CodeVerification } from "./CodeVerification";
 export { ConfirmEmail } from "./ConfirmEmail";
 export { ForgotPassword } from "./ForgotPassword";
+export { HistoryPage } from "./History";
 export { Main } from "./Main";
 export { Onboarding } from "./Onboarding";
 export { PrivacyPolice } from "./PrivacyPolice";
