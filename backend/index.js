@@ -116,6 +116,18 @@ app.post("/progress", express.json(), async (req, res) => {
       );
     }
 
+    if (operation.progress === 100) {
+      const refEstimate = admin
+        .database()
+        .ref(`profiles/${uid}/estimates/${executionId}`);
+      const updatedOperation = {
+        ...operation,
+        isFinished: true,
+      };
+      const newOpRef = refEstimate.push();
+      await newOpRef.set(updatedOperation);
+    }
+
     res.json({ status: "ok", key: newOpRef.key });
   } catch (err) {
     console.error("❌ update-operations error:", err);
