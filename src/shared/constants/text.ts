@@ -110,6 +110,8 @@ export const TEXT = Object.freeze({
   subscription_resumed: "Subscription successfully resumed",
   history: "History",
   copied: "Copied",
+  hourly_rate: "Hourly rate ($)",
+  enter_hourly_rate: "Enter your team's hourly rate",
 });
 
 export const ERRORS_TEXT = Object.freeze({

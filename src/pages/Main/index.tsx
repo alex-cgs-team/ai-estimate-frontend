@@ -26,6 +26,7 @@ import { v4 as uuidv4 } from "uuid";
 export const Main = () => {
   const [projectName, setProjectName] = useState("");
   const [notes, setNotes] = useState("");
+  const [hourlyRate, setHourlyRate] = useState("");
 
   const [items, setItems] = useState<FileEntry[]>([]);
   const [loading, setLoading] = useState(false);
@@ -55,7 +56,8 @@ export const Main = () => {
   const imgDisabled = imagesCount >= VISUAL_FILES_LIMIT;
   const textDisabled = textsCount >= TEXT_FILES_LIMIT;
 
-  const isDisabled = projectName.length < 3 || items.length < 1;
+  const isDisabled =
+    projectName.length < 3 || items.length < 1 || hourlyRate.length === 0;
 
   const restoreData = async () => {
     const draft = await get(DB_KEYS.DRAFT);
@@ -119,6 +121,7 @@ export const Main = () => {
       formData.append("userId", user.uid);
       formData.append("project_name", projectName);
       formData.append("notes_to_ai", notes);
+      formData.append("hourly_rate", hourlyRate);
       formData.append("user_phone", user.phoneNumber || "");
       formData.append("user_name", profile?.name ?? "");
       formData.append("user_role", profile?.role ?? "");
@@ -157,6 +160,7 @@ export const Main = () => {
         notes,
         isFinished: false,
         sharedLink: respJson.sharedLink || null,
+        teamHourlyRate: hourlyRate,
         createdAt: Date.now(),
       });
 
@@ -179,6 +183,20 @@ export const Main = () => {
     }
   };
 
+  const handleHourlyRateChange = (value: string) => {
+    if (value === "") {
+      setHourlyRate(value);
+      return;
+    }
+    if (value.length > 1 && value.startsWith("0") && !value.startsWith("0.")) {
+      return;
+    }
+
+    if (Number(value) >= 0) {
+      setHourlyRate(value);
+    }
+  };
+
   return (
     <div className="flex items-center justify-center mt-20 px-4">
       <div className="flex flex-col gap-6 w-full max-w-sm">
@@ -191,6 +209,13 @@ export const Main = () => {
             label={TEXT.project_name}
             placeholder={TEXT.enter_project_name}
             maxLength={PROJECT_NAME_LIMIT}
+          />
+
+          <Input
+            value={hourlyRate}
+            onChange={handleHourlyRateChange}
+            label={TEXT.hourly_rate}
+            placeholder={TEXT.enter_hourly_rate}
           />
 
           <TextArea
