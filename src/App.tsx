@@ -42,6 +42,7 @@ export default function App() {
               <Route path={ROUTES.main} element={ROUTE_ELEMENT.main} />
               <Route path={ROUTES.progress} element={ROUTE_ELEMENT.progress} />
               <Route path={ROUTES.profile} element={ROUTE_ELEMENT.profile} />
+              <Route path={ROUTES.history} element={ROUTE_ELEMENT.history} />
               <Route
                 path={ROUTES.changePhone}
                 element={ROUTE_ELEMENT.changePhone}

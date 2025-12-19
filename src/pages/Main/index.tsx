@@ -1,6 +1,7 @@
 import { Button, FileDropzone, FilesList, Input, TextArea } from "@/components";
-import { useEffect, useState } from "react";
-import { ERRORS_TEXT, TEXT } from "@/shared/constants/text";
+import { rtdb } from "@/firebase";
+import { useAuth, useError, useModal } from "@/hooks";
+import { LimitModal, RestoreDataModal } from "@/modals";
 import {
   ACCEPT_FILES,
   FREE_LIMIT,
@@ -9,23 +10,23 @@ import {
   TEXT_FILES_LIMIT,
   VISUAL_FILES_LIMIT,
 } from "@/shared/config/config";
+import { N8N_WEBHOOK_URL } from "@/shared/constants/env";
+import { DB_KEYS } from "@/shared/constants/keys";
+import { ROUTES } from "@/shared/constants/routes";
+import { ERRORS_TEXT, TEXT } from "@/shared/constants/text";
 import type { FileEntry } from "@/types/types";
 import { getFileExt, getKind } from "@/utils";
-import { ArrowRight } from "lucide-react";
-import { useAuth, useError, useModal } from "@/hooks";
 import { ref as dbRef, push, runTransaction, set } from "firebase/database";
-import { v4 as uuidv4 } from "uuid";
-import { rtdb } from "@/firebase";
-import { N8N_WEBHOOK_URL } from "@/shared/constants/env";
+import { get, set as setKeyVal } from "idb-keyval";
+import { ArrowRight } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ROUTES } from "@/shared/constants/routes";
-import { LimitModal, RestoreDataModal } from "@/modals";
-import { set as setKeyVal, get } from "idb-keyval";
-import { DB_KEYS } from "@/shared/constants/keys";
+import { v4 as uuidv4 } from "uuid";
 
 export const Main = () => {
   const [projectName, setProjectName] = useState("");
   const [notes, setNotes] = useState("");
+  const [hourlyRate, setHourlyRate] = useState("");
 
   const [items, setItems] = useState<FileEntry[]>([]);
   const [loading, setLoading] = useState(false);
@@ -55,7 +56,8 @@ export const Main = () => {
   const imgDisabled = imagesCount >= VISUAL_FILES_LIMIT;
   const textDisabled = textsCount >= TEXT_FILES_LIMIT;
 
-  const isDisabled = projectName.length < 3 || items.length < 1;
+  const isDisabled =
+    projectName.length < 3 || items.length < 1 || hourlyRate.length === 0;
 
   const restoreData = async () => {
     const draft = await get(DB_KEYS.DRAFT);
@@ -119,6 +121,7 @@ export const Main = () => {
       formData.append("userId", user.uid);
       formData.append("project_name", projectName);
       formData.append("notes_to_ai", notes);
+      formData.append("hourly_rate", hourlyRate);
       formData.append("user_phone", user.phoneNumber || "");
       formData.append("user_name", profile?.name ?? "");
       formData.append("user_role", profile?.role ?? "");
@@ -155,7 +158,9 @@ export const Main = () => {
       await set(estimateRef, {
         projectName,
         notes,
+        isFinished: false,
         sharedLink: respJson.sharedLink || null,
+        teamHourlyRate: hourlyRate,
         createdAt: Date.now(),
       });
 
@@ -178,6 +183,20 @@ export const Main = () => {
     }
   };
 
+  const handleHourlyRateChange = (value: string) => {
+    if (value === "") {
+      setHourlyRate(value);
+      return;
+    }
+    if (value.length > 1 && value.startsWith("0") && !value.startsWith("0.")) {
+      return;
+    }
+
+    if (Number(value) >= 0) {
+      setHourlyRate(value);
+    }
+  };
+
   return (
     <div className="flex items-center justify-center mt-20 px-4">
       <div className="flex flex-col gap-6 w-full max-w-sm">
@@ -190,6 +209,13 @@ export const Main = () => {
             label={TEXT.project_name}
             placeholder={TEXT.enter_project_name}
             maxLength={PROJECT_NAME_LIMIT}
+          />
+
+          <Input
+            value={hourlyRate}
+            onChange={handleHourlyRateChange}
+            label={TEXT.hourly_rate}
+            placeholder={TEXT.enter_hourly_rate}
           />
 
           <TextArea

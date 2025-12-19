@@ -46,7 +46,6 @@ export const Input = ({
       </div>
 
       <div className="relative">
-        {/* ИКОНКА EMAIL */}
         {type === "email" && (
           <div className="absolute left-3 top-0 bottom-0 flex items-center pointer-events-none z-20">
             <Mail size={16} color="#737373" />
