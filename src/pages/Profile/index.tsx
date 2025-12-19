@@ -47,7 +47,6 @@ export const Profile = () => {
       ]
     : [];
 
-  console.log(profile);
   return (
     <div>
       <ArrowBack />

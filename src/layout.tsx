@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { onAuthStateChanged } from "firebase/auth";
 import { get, ref } from "firebase/database";
 import { useEffect, useState } from "react";
@@ -26,24 +27,34 @@ export default function AppLayout() {
     return unsub;
   }, [setUser, setProfile]);
 
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        refetchOnWindowFocus: false,
+      },
+    },
+  });
+
   if (loading) return null;
   return (
     <div className="min-h-screen flex flex-col bg-[#FEFBFF]">
-      <Header />
-      <main className="flex-1">
-        <Outlet />
-        <ToastContainer
-          position="bottom-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          pauseOnHover
-          draggable
-          theme="dark"
-        />
-      </main>
-      <Footer />
+      <QueryClientProvider client={queryClient}>
+        <Header />
+        <main className="flex-1">
+          <Outlet />
+          <ToastContainer
+            position="bottom-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            pauseOnHover
+            draggable
+            theme="dark"
+          />
+        </main>
+        <Footer />
+      </QueryClientProvider>
     </div>
   );
 }

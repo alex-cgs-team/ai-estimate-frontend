@@ -38,3 +38,23 @@ export const ResentEmailType = {
 
 export type ResentEmailType =
   (typeof ResentEmailType)[keyof typeof ResentEmailType];
+
+export type Project = {
+  projectName: string;
+  dateAdded: string;
+  noteToAi: string;
+  link: string;
+};
+
+export interface FirebaseEstimate {
+  projectName: string;
+  notes: string;
+  isFinished: boolean;
+  fileLink: string | null;
+  createdAt: number;
+}
+
+export interface ProjectTableItem extends Project {
+  id: string;
+  isFinished: boolean;
+}
