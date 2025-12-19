@@ -24,8 +24,6 @@ export const HistoryTable = () => {
   const { data = [], isLoading, isError } = useEstimates(sort);
   const { setToastErrorText } = useError();
 
-  console.log("render");
-
   useEffect(() => {
     if (isError) {
       setToastErrorText(ERRORS_TEXT.something_went_wrong);
