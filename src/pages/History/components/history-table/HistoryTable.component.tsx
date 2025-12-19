@@ -10,8 +10,9 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, Copy } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { ChevronDown, ChevronUp, Copy } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { EmptyTable } from "../empty-table/EmptyTable.component";
 import { Pagination } from "../pagination/Pagination.component";
 
 const columnHelper = createColumnHelper<Project>();
@@ -19,8 +20,11 @@ const columnHelper = createColumnHelper<Project>();
 const ITEMS_PER_PAGE = 10;
 
 export const HistoryTable = () => {
-  const { data = [], isLoading, isError } = useEstimates();
+  const [sort, setSort] = useState<"asc" | "desc">("desc");
+  const { data = [], isLoading, isError } = useEstimates(sort);
   const { setToastErrorText } = useError();
+
+  console.log("render");
 
   useEffect(() => {
     if (isError) {
@@ -44,15 +48,39 @@ export const HistoryTable = () => {
       columnHelper.accessor("projectName", {
         header: () => (
           <div className="flex items-center gap-1 column-title">
-            {TABLE_TEXT.project_name} <ArrowUpDown size={14} color="#0F0F0F" />
+            {TABLE_TEXT.project_name}
           </div>
         ),
-        cell: (info) => <span className="raw-text">{info.getValue()}</span>,
+        cell: (info) => (
+          <div className="truncate pr-4" title={info.getValue()}>
+            <span className="raw-text">{info.getValue()}</span>
+          </div>
+        ),
       }),
       columnHelper.accessor("dateAdded", {
         header: () => (
-          <div className="flex items-center gap-1 column-title">
-            {TABLE_TEXT.date_added} <ArrowUpDown size={14} color="#0F0F0F" />
+          <div className="flex items-center gap-1 column-title z-50">
+            <span>{TABLE_TEXT.date_added}</span>{" "}
+            <div>
+              <div
+                className="cursor-pointer transition-transform hover:scale-125"
+                onClick={() => setSort("asc")}
+              >
+                <ChevronUp
+                  size={14}
+                  color={sort === "asc" ? "#0F0F0F" : "#D0D5DD"}
+                />
+              </div>
+              <div
+                className="cursor-pointer transition-transform hover:scale-125"
+                onClick={() => setSort("desc")}
+              >
+                <ChevronDown
+                  size={14}
+                  color={sort === "desc" ? "#0F0F0F" : "#D0D5DD"}
+                />
+              </div>
+            </div>
           </div>
         ),
         cell: (info) => <span className="raw-text">{info.getValue()}</span>,
@@ -60,12 +88,14 @@ export const HistoryTable = () => {
       columnHelper.accessor("noteToAi", {
         header: () => (
           <div className="flex items-center gap-1 column-title">
-            {TABLE_TEXT.note_to_ai} <ArrowUpDown size={14} color="#0F0F0F" />
+            {TABLE_TEXT.note_to_ai}
           </div>
         ),
         cell: (info) => (
           <div className="flex items-center gap-2 group w-full">
-            <span className="raw-text truncate">{info.getValue()}</span>
+            <span className="raw-text truncate" title={info.getValue()}>
+              {info.getValue()}
+            </span>
             {info.getValue() !== "No notes" && (
               <button
                 className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 cursor-pointer"
@@ -96,7 +126,7 @@ export const HistoryTable = () => {
         ),
       }),
     ],
-    []
+    [sort]
   );
 
   const table = useReactTable({
@@ -110,6 +140,8 @@ export const HistoryTable = () => {
       },
     },
   });
+
+  const isNotEmpty = data.length > 0;
 
   if (isLoading || isError) {
     return (
@@ -125,41 +157,67 @@ export const HistoryTable = () => {
         {TEXT.history}
       </h1>
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
+        <table className="w-full border-collapse table-fixed">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr
                 key={headerGroup.id}
                 className="border-b border-t border-[#ECE5EF]"
               >
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className="text-left py-3 px-4 text-sm font-medium text-gray-500"
-                  >
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                  </th>
-                ))}
+                {headerGroup.headers.map((header) => {
+                  let widthClass = "w-auto";
+                  if (header.id === "projectName") widthClass = "w-[20%]";
+                  if (header.id === "dateAdded") widthClass = "w-[15%]";
+                  if (header.id === "noteToAi") widthClass = "w-[50%]";
+                  if (header.id === "link") widthClass = "w-[15%]";
+
+                  return (
+                    <th
+                      key={header.id}
+                      className={`text-left py-3 px-4 text-sm font-medium text-gray-500 ${widthClass}`}
+                    >
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                    </th>
+                  );
+                })}
               </tr>
             ))}
           </thead>
-          <tbody className="divide-y divide-[#ECE5EF] border-b border-[#ECE5EF]">
-            {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className="hover:bg-gray-50 transition-colors">
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="py-4 px-4 table-raw-text">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
+          <tbody
+            className={`divide-y divide-[#ECE5EF] ${
+              isNotEmpty ? "border-b" : ""
+            } border-[#ECE5EF]`}
+          >
+            {isNotEmpty ? (
+              table.getRowModel().rows.map((row) => (
+                <tr key={row.id} className="hover:bg-gray-50 transition-colors">
+                  {row.getVisibleCells().map((cell) => (
+                    <td
+                      key={cell.id}
+                      className="py-4 px-4 table-raw-text overflow-hidden"
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={columns.length} className="h-[60vh] align-middle">
+                  <EmptyTable />
+                </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
 
-        <Pagination table={table} />
+        {isNotEmpty && <Pagination table={table} />}
       </div>
     </div>
   );

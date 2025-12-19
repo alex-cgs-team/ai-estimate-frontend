@@ -112,6 +112,8 @@ export const TEXT = Object.freeze({
   copied: "Copied",
   hourly_rate: "Hourly rate ($)",
   enter_hourly_rate: "Enter your team's hourly rate",
+  hey_you_dont: "Hey, you don’t have any estimates yet",
+  estimate_your_product: "Estimate your project",
 });
 
 export const ERRORS_TEXT = Object.freeze({
