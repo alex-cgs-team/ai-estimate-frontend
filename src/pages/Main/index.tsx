@@ -121,6 +121,7 @@ export const Main = () => {
       formData.append("userId", user.uid);
       formData.append("project_name", projectName);
       formData.append("notes_to_ai", notes);
+      formData.append("hourly_rate", hourlyRate);
       formData.append("user_phone", user.phoneNumber || "");
       formData.append("user_name", profile?.name ?? "");
       formData.append("user_role", profile?.role ?? "");
