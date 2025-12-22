@@ -1,8 +1,8 @@
+import { FolderPNG } from "@/assets/images";
+import { useError } from "@/hooks";
+import { TEXT } from "@/shared/constants/text";
 import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { FolderPNG } from "@/assets/images";
-import { TEXT } from "@/shared/constants/text";
-import { useError } from "@/hooks";
 
 type Props = {
   onFiles?: (files: File[]) => void;
@@ -38,7 +38,7 @@ export function FileDropzone({
             setToastErrorText(TEXT.img_files_limit);
             return;
           }
-        } else if (["pdf", "csv"].includes(ext)) {
+        } else if (["pdf", "csv", "xls", "xlsx", "txt"].includes(ext)) {
           if (textDisabled) {
             isLimit = true;
             setToastErrorText(TEXT.text_files_limit);
