@@ -13,6 +13,9 @@ export const ACCEPT_FILES = {
   "application/msword": [],
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [],
   "text/csv": [],
+  "text/plain": [],
+  "application/vnd.ms-excel": [],
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [],
 };
 
 export const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
