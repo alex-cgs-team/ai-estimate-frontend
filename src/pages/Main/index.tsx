@@ -65,6 +65,7 @@ export const Main = () => {
     setProjectName(draft.projectName);
     setNotes(draft.notes);
     setItems(draft.items);
+    setHourlyRate(draft.teamHourlyRate);
   };
 
   const handleDescriptionChange = (id: string, description: string) => {
@@ -124,6 +125,7 @@ export const Main = () => {
       formData.append("hourly_rate", hourlyRate);
       formData.append("user_phone", user.phoneNumber || "");
       formData.append("user_name", profile?.name ?? "");
+      formData.append("user_email", user.email ?? "");
       formData.append("user_role", profile?.role ?? "");
 
       items.forEach((entry) => {
