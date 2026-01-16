@@ -170,6 +170,7 @@ export const Main = () => {
         projectName,
         notes,
         items,
+        teamHourlyRate: hourlyRate
       });
 
       await runTransaction(
